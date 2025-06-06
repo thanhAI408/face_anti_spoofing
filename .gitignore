@@ -1,0 +1,42 @@
+# Bỏ môi trường ảo
+venv/
+ENV/
+env/
+.venv/
+
+# File dữ liệu tạm, model, ảnh, video
+*.h5
+*.hdf5
+*.ckpt
+*.pb
+*.pt
+*.pkl
+*.joblib
+*.npy
+*.npz
+*.log
+*.csv
+*.mp4
+*.avi
+*.jpg
+*.jpeg
+*.png
+*.gif
+
+# Thư mục chứa dữ liệu huấn luyện/test
+dataset/
+data/
+__pycache__/
+.DS_Store
+
+# Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# VS Code settings
+.vscode/
+*.code-workspace
+
+# OS hệ thống
+Thumbs.db
+ehthumbs.db
+Desktop.ini
