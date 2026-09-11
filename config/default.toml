@@ -1,0 +1,57 @@
+[camera]
+index = 0
+width = 640
+height = 480
+fps = 30
+mirror = true
+
+[detector]
+prototxt = "face_detector/deploy.prototxt"
+weights = "face_detector/res10_300x300_ssd_iter_140000.caffemodel"
+confidence = 0.60
+padding = 0.18
+
+[texture]
+model_path = "artifacts/models/texture_mobilenetv3.onnx"
+input_size = 224
+run_every_n_frames = 2
+
+[quality]
+min_brightness = 45.0
+max_brightness = 220.0
+min_blur_variance = 45.0
+min_face_area_ratio = 0.06
+max_face_area_ratio = 0.72
+
+[challenge]
+enabled = true
+steps = 2
+actions = ["blink", "turn_left", "turn_right"]
+calibration_frames = 8
+timeout_seconds = 12.0
+closed_eye_ratio = 0.19
+open_eye_ratio = 0.23
+turn_delta = 0.18
+neutral_delta = 0.08
+consecutive_frames = 2
+face_loss_reset_frames = 5
+
+[motion]
+window_size = 24
+min_frames = 8
+low_residual = 0.003
+high_residual = 0.020
+
+[fusion]
+texture_weight = 0.55
+challenge_weight = 0.30
+motion_weight = 0.15
+min_live_evidence_weight = 0.65
+min_spoof_evidence_weight = 0.45
+live_threshold = 0.72
+spoof_threshold = 0.35
+hard_spoof_texture_threshold = 0.12
+hard_spoof_frames = 3
+smoothing_window = 10
+min_stable_frames = 5
+require_challenge_for_live = true

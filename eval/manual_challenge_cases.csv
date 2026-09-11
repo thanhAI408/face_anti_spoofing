@@ -1,0 +1,13 @@
+case_id,category,input,expected,actual,verdict,latency_ms,evidence_file,notes
+M-01,input,no face,NO_FACE,,,,,
+M-02,input,two faces,RETRY multiple_faces,,,,,
+M-03,quality,face too dark,RETRY too_dark,,,,,
+M-04,quality,blurred live face,RETRY too_blurry,,,,,
+M-05,live,live person completes random challenge,LIVE when evidence is sufficient,,,,,
+M-06,print,stationary printed face,must not be LIVE,,,,,
+M-07,print,moved or bent printed face,must not be LIVE,,,,,
+M-08,replay,static face on phone,must not be LIVE,,,,,
+M-09,replay,replayed blink video,must not be LIVE for unmatched challenge,,,,,
+M-10,replay,replayed head-turn video,must not be LIVE for unmatched challenge,,,,,
+M-11,usability,live person wearing glasses,record BPCER and usability,,,,,
+M-12,usability,live person times out,RETRY not SPOOF,,,,,

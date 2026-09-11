@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rgb-face-antispoofing"
+version = "2.0.0"
+description = "Multi-signal RGB face presentation attack detection for commodity webcams"
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+  "numpy>=1.24,<2.0",
+  "opencv-contrib-python>=4.8,<5",
+  "mediapipe==0.10.21",
+]
+
+[project.optional-dependencies]
+train = [
+  "Pillow>=10,<12",
+  "torch>=2.2,<3",
+  "torchvision>=0.17,<1",
+  "onnx>=1.16,<2",
+]
+dev = [
+  "pytest>=8,<9",
+  "ruff>=0.8,<1",
+]
+
+[project.scripts]
+face-antispoof = "face_antispoofing.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

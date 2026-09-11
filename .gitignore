@@ -10,12 +10,14 @@ env/
 *.ckpt
 *.pb
 *.pt
+*.onnx
 *.pkl
 *.joblib
 *.npy
 *.npz
 *.log
 *.csv
+!eval/manual_challenge_cases.csv
 *.mp4
 *.avi
 *.jpg
@@ -27,6 +29,10 @@ env/
 dataset/
 data/
 __pycache__/
+.pytest_cache/
+.ruff_cache/
+.coverage
+.mypy_cache/
 .DS_Store
 
 # Jupyter notebook checkpoints
@@ -40,3 +46,12 @@ __pycache__/
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+
+# Generated runtime/training outputs
+artifacts/
+reports/evaluation/
+
+# Keep the data contract documentation, ignore raw biometric data
+!data/
+data/*
+!data/README.md
