@@ -68,3 +68,17 @@ Encoder cũ dùng scikit-learn 1.6.1 còn môi trường dùng 1.7.0; vẫn có 
 - File: face_detection_yunet_2023mar.onnx (tương thích OpenCV 4.x).
 - SHA256: 8f2383e4dd3cfbb4553ea8718107fc0423210dc964f9f4280604804ed2552fa4
 - Giấy phép MIT được lưu tại `face_detector/YUNET-LICENSE.txt`.
+
+## Bản web trên Render
+
+`web_app.py` phục vụ giao diện tại `/`, API `/api/session`, `/api/frame`, và health check `/healthz`. Ảnh JPEG tối đa 750 KB, cạnh tối đa 960 px; xử lý trong RAM, không ghi ảnh. Mỗi phiên có lịch sử riêng, hết hạn sau 30 giây không hoạt động. Tối đa 32 phiên, một worker dùng khóa để tránh truy cập model đồng thời.
+
+Render dùng `requirements-render.txt`, Python 3.11.11, start command:
+
+```sh
+gunicorn web_app:app --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120
+```
+
+`render.yaml` cấu hình gói Free, Singapore. Gói Free có thể ngủ khi không hoạt động. Camera trình duyệt cần HTTPS (localhost được chấp nhận), chỉ xin quyền khi bấm Bật camera; tự dừng khi ẩn trang. Ảnh được gửi đến dịch vụ Render đã triển khai để nhận diện.
+
+Model `web_models/liveness.tflite` là bản chuyển đổi float32 từ model local, không huấn luyện mới. Không cần pickle hoặc TensorFlow đầy đủ khi chạy Linux. Tái xuất: `python scripts/export_web_model.py` với môi trường TensorFlow local và file `liveness.h5`. Model H5 không có trong GitHub; bản Lite đã được đóng gói để dịch vụ web tự chạy.

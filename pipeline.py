@@ -79,8 +79,9 @@ class Track:
 
 class TemporalDecision:
     """Geometric continuity only, not identity recognition. Drop missing tracks immediately."""
-    def __init__(self, threshold=0.8, min_samples=6, min_seconds=0.4):
+    def __init__(self, threshold=0.8, min_samples=6, min_seconds=0.4, max_gap=0.5, window_seconds=1.5):
         self.threshold, self.min_samples, self.min_seconds = threshold, min_samples, min_seconds
+        self.max_gap, self.window_seconds = max_gap, window_seconds
         self.tracks = []
         self.next_id = 1
 
@@ -109,10 +110,10 @@ class TemporalDecision:
         if probs is None:
             track.samples.clear()
             return 'adjust', None
-        if track.samples and now-track.samples[-1][0] > 0.5:
+        if track.samples and now-track.samples[-1][0] > self.max_gap:
             track.samples.clear()
         track.samples.append((now,np.asarray(probs)))
-        while track.samples and now-track.samples[0][0] > 1.5:
+        while track.samples and now-track.samples[0][0] > self.window_seconds:
             track.samples.popleft()
         if len(track.samples) < self.min_samples or now-track.samples[0][0] < self.min_seconds:
             return 'checking', None
@@ -127,19 +128,26 @@ class TemporalDecision:
 
 class Pipeline:
     def __init__(self, model_path=BASE/'liveness.h5', labels_path=BASE/'le.pickle', detector_path=BASE/'face_detector/face_detection_yunet_2023mar.onnx', confidence=0.85, threshold=0.8):
-        import pickle
-        from tensorflow.keras.models import load_model
+        import json
         self.detector = FaceDetector(detector_path,confidence)
-        self.model = load_model(model_path,compile=False)
-        with open(labels_path,'rb') as f:
-            self.labels = [str(x).lower() for x in pickle.load(f).classes_]
+        if str(model_path).endswith('.tflite'):
+            from inference_runtime import LiteModel
+            self.model = LiteModel(model_path)
+            self.labels = json.loads(Path(labels_path).read_text(encoding='utf-8'))
+        else:
+            import pickle
+            from tensorflow.keras.models import load_model
+            self.model = load_model(model_path,compile=False)
+            with open(labels_path,'rb') as f:
+                self.labels = [str(x).lower() for x in pickle.load(f).classes_]
         if set(self.labels) != {'fake','real'} or tuple(self.model.input_shape[1:]) != (32,32,3) or self.model.output_shape[-1] != 2:
             raise ValueError('Expected 32x32 BGR model and fake/real label encoder')
         self.temporal = TemporalDecision(threshold)
 
-    def process(self, frame, now):
+    def process(self, frame, now, temporal=None):
+        temporal = self.temporal if temporal is None else temporal
         faces = self.detector.detect(frame)
-        tracks = self.temporal.associate([f['box'] for f in faces])
+        tracks = temporal.associate([f['box'] for f in faces])
         valid, batch = [], []
         for i,face in enumerate(faces):
             face['quality'] = quality(frame,face)
@@ -149,10 +157,12 @@ class Pipeline:
                 batch.append(preprocess(frame[y:b,x:r]))
         predictions = {}
         if batch:
-            output = self.model(np.stack(batch),training=False).numpy()
+            output = self.model(np.stack(batch),training=False)
+            if hasattr(output, "numpy"):
+                output = output.numpy()
             predictions = dict(zip(valid,output))
         for i,(face,track) in enumerate(zip(faces,tracks)):
-            status, mean = self.temporal.update(track,predictions.get(i),now)
+            status, mean = temporal.update(track,predictions.get(i),now)
             face['track_id'] = track.id
             face['status'] = self.labels[status] if isinstance(status,int) else status
             face['scores'] = None if mean is None else {label:float(mean[j]) for j,label in enumerate(self.labels)}
