@@ -1,6 +1,7 @@
 from model.livenessnet import LivenessNet
 from sklearn.preprocessing import LabelEncoder
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GroupShuffleSplit
+from pathlib import Path
 from sklearn.metrics import classification_report
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.optimizers import Adam
@@ -22,15 +23,21 @@ INPUT_SHAPE = (32, 32, 3)  # Input shape for model
 print("[INFO] loading images...")
 data = []
 labels = []
+groups = []
 imagePaths = list(paths.list_images("dataset"))
 
 for imagePath in imagePaths:
     label = imagePath.split(os.path.sep)[-2]
     image = cv2.imread(imagePath)
+    if image is None:
+        raise ValueError(f"Cannot read image: {imagePath}")
     image = cv2.resize(image, (32, 32))
     
     data.append(image)
     labels.append(label)
+    # Keep frames from the same source video in one split.
+    name = Path(imagePath).name
+    groups.append(name.split(".mp4")[0].split("__frame_")[0])
 
 data = np.array(data, dtype="float") / 255.0  # Normalize images
 labels = np.array(labels)
@@ -41,7 +48,12 @@ labels = le.fit_transform(labels)
 labels = to_categorical(labels, 2)
 
 # Split dataset
-(trainX, testX, trainY, testY) = train_test_split(data, labels, test_size=0.2, stratify=labels, random_state=42)
+splitter = GroupShuffleSplit(n_splits=1, test_size=0.2, random_state=42)
+train_idx, test_idx = next(splitter.split(data, labels, groups=groups))
+trainX, testX = data[train_idx], data[test_idx]
+trainY, testY = labels[train_idx], labels[test_idx]
+if np.any(trainY.sum(axis=0) == 0) or np.any(testY.sum(axis=0) == 0):
+    raise ValueError("Each video split must contain both fake and real samples.")
 
 # Data augmentation
 aug = ImageDataGenerator(rotation_range=20, zoom_range=0.15, width_shift_range=0.2, 
@@ -50,7 +62,8 @@ aug = ImageDataGenerator(rotation_range=20, zoom_range=0.15, width_shift_range=0
 # Initialize model
 print("[INFO] compiling model...")
 model = LivenessNet.build(width=32, height=32, depth=3, classes=2)
-opt = Adam(learning_rate=INIT_LR, decay=INIT_LR / EPOCHS)
+from tensorflow.keras.optimizers.schedules import InverseTimeDecay
+opt = Adam(learning_rate=InverseTimeDecay(INIT_LR, decay_steps=1, decay_rate=INIT_LR / EPOCHS))
 model.compile(loss="binary_crossentropy", optimizer=opt, metrics=["accuracy"])
 
 # Train model

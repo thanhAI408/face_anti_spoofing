@@ -6,6 +6,7 @@ import numpy as np
 import argparse
 import cv2
 import os
+from pathlib import Path
 
 # Cac tham so dau vao
 ap = argparse.ArgumentParser()
@@ -20,6 +21,9 @@ ap.add_argument("-c", "--confidence", type=float, default=0.5,
 ap.add_argument("-s", "--skip", type=int, default=1,
 	help="# of frames to skip before applying face detection")
 args = vars(ap.parse_args())
+if args["skip"] < 1:
+    ap.error("--skip must be at least 1")
+Path(args["output"]).mkdir(parents=True, exist_ok=True)
 
 
 # Load model ssd nhan dien mat
@@ -31,6 +35,8 @@ net = cv2.dnn.readNetFromCaffe(protoPath, modelPath)
 
 # Doc file video input
 vs = cv2.VideoCapture(args["input"])
+if not vs.isOpened():
+	raise RuntimeError(f"Cannot open video: {args['input']}")
 read = 0
 saved = 0
 
@@ -56,7 +62,7 @@ while True:
 	detections = net.forward()
 
 	# Neu tim thay it nhat 1 khuon mat
-	if len(detections) > 0:
+	if detections.shape[2] > 0:
 		# Tim khuon  mat to nhat trong anh
 		i = np.argmax(detections[0, 0, :, 2])
 		confidence = detections[0, 0, i, 2]
@@ -66,12 +72,17 @@ while True:
 			#Tach khuon mat va ghi ra file
 			box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
 			(startX, startY, endX, endY) = box.astype("int")
+			startX, startY = max(0, startX), max(0, startY)
+			endX, endY = min(w, endX), min(h, endY)
+			if endX <= startX or endY <= startY:
+				continue
 			face = frame[startY:endY, startX:endX]
 
 			# write the frame to disk
 			p = os.path.sep.join([args["output"],
-				args["input"].split('/')[1] + "{}.png".format(saved)])
-			cv2.imwrite(p, face)
+				Path(args["input"]).stem + "__frame_{}.png".format(read)])
+			if not cv2.imwrite(p, face):
+				raise IOError(f"Cannot save image: {p}")
 			saved += 1
 			print("[INFO] saved {} to disk".format(p))
 
