@@ -30,7 +30,7 @@ def headers(response):
 def index():return send_from_directory(app.static_folder,'index.html')
 
 @app.get('/healthz')
-def health():return jsonify(status='ok',model='liveness-tflite',detector='yunet',version='web-1')
+def health():return jsonify(status='ok',model='liveness-tflite',detector='yunet',version='web-1',commit=os.environ.get('RENDER_GIT_COMMIT','local'))
 
 @app.post('/api/session')
 def new_session():
