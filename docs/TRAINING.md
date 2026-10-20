@@ -120,3 +120,40 @@ Tài liệu này **không tự thay model mặc định** của camera/API và k
 ```
 
 Xem thêm [hướng dẫn API](API.md). Báo cáo cuối cần tách điểm ảnh cắt sẵn, kết quả phát lại pipeline, kiểm route API và thử camera thật; mỗi bước trả lời một câu hỏi khác nhau.
+
+---
+
+## 6. Đợt huấn luyện cam4k (Camera USB SC-M200 - 20/10/2026)
+
+### 6.1. Dữ liệu và Phân tách
+- **Nguồn dữ liệu:** 91 video 4K/Full HD quay thực tế từ Camera USB SC-M200 đặt trong thư mục `video cam4k/`.
+- **Phân tách độc lập theo danh tính người (Person-matched split):**
+  - **`train/`**: 30 video real + 33 video fake (63 video).
+  - **`validate/`**: 7 video real + 7 video fake (14 video).
+  - **`test/`**: 7 video real + 7 video fake (14 video).
+  - Đảm bảo ranh giới: tuyệt đối không có người hoặc video nào xuất hiện đồng thời ở nhiều tập.
+
+### 6.2. Trích xuất khuôn mặt (`scripts/extract_cam4k.py`)
+- Sử dụng YuNet ONNX detector cắt các khuôn mặt (32x32 BGR, `float32 / 255.0`) với bước nhảy `--skip 5`:
+  - `dataset_cam4k/train`: 16.268 ảnh.
+  - `dataset_cam4k/validate`: 5.015 ảnh.
+  - `dataset_cam4k/test`: 4.811 ảnh.
+  - Tổng cộng: **26.094 ảnh**.
+
+### 6.3. Quy trình huấn luyện (`scripts/train_cam4k.py`)
+- **Kiến trúc:** LivenessNet kết hợp cơ chế lấy mẫu cân bằng theo video (`VideoBalancedEpochGenerator`) để tránh các video dài lấn át video ngắn.
+- **Tăng cường dữ liệu:** Xoay nhẹ (±10°), zoom (0.92–1.08), dịch khung (±8%), lật ngang, cân bằng trắng nhẹ.
+- **Tiêu chí tối ưu:** Giám sát `val_loss`, tự động lưu checkpoint `best.keras`, giảm learning rate khi gặp plateau.
+- **Kết quả huấn luyện (18 epoch):**
+  - Checkpoint tốt nhất: **Epoch 14**.
+  - Train Loss: **0.0922** | Train Accuracy: **97.79%**.
+  - Validation Loss: **0.0941** | Validation Accuracy: **98.01%**.
+  - Độ chính xác cấp khung hình: Validation = **98.88%**, Test = **98.09%**.
+  - Độ chính xác cấp video trên tập test: **14/14 (100%)**.
+  - Khả năng tổng quát hóa với camera ngoài: **99.84%**.
+
+### 6.4. Xuất Model và Triển khai
+- File model Keras: [`liveness_cam4k.h5`](../liveness_cam4k.h5) & [`le_cam4k.pickle`](../le_cam4k.pickle).
+- File model TFLite tăng tốc: [`web_models/liveness_cam4k.tflite`](../web_models/liveness_cam4k.tflite) (thời gian suy luận ~0.25 ms/khung hình trên CPU với XNNPACK).
+- Biểu đồ huấn luyện: [`plot_cam4k.png`](../plot_cam4k.png).
+
