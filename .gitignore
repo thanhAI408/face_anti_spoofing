@@ -5,7 +5,6 @@ env/
 .venv/
 
 # File dữ liệu tạm, model, ảnh, video
-*.h5
 *.hdf5
 *.ckpt
 *.pb
@@ -17,14 +16,21 @@ env/
 *.log
 *.csv
 *.mp4
+*.[mM][oO][vV]
+*.partial
+*.keras
 *.avi
 *.jpg
 *.jpeg
-*.png
 *.gif
 
-# Thư mục chứa dữ liệu huấn luyện/test
+# Thư mục dữ liệu và output lớn
 dataset/
+dataset_cam4k/
+video cam4k/
+videos/
+outputs/
+versions/
 data/
 __pycache__/
 .DS_Store

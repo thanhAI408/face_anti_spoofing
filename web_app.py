@@ -8,12 +8,12 @@ from flask import Flask,request,jsonify,send_from_directory
 from PIL import Image,UnidentifiedImageError
 import cv2
 import numpy as np
-from pipeline import BASE,Pipeline,TemporalDecision
+from pipeline import BASE,Pipeline,FastBinaryDecision
 
 cv2.setNumThreads(1)
 app=Flask(__name__,static_folder=str(BASE/'static'))
 app.config['MAX_CONTENT_LENGTH']=750_000
-engine=Pipeline(BASE/'web_models/liveness.tflite',BASE/'web_models/labels.json')
+engine=Pipeline(BASE/'web_models/liveness_cam4k.tflite',BASE/'web_models/labels_cam4k.json')
 lock=threading.Lock()
 sessions={}
 
@@ -40,7 +40,7 @@ def new_session():
             if now-sessions[token]['seen']>30:sessions.pop(token)
         if len(sessions)>=32:return jsonify(error='Máy chủ đang bận. Vui lòng thử lại sau.'),503
         token=secrets.token_urlsafe(24)
-        sessions[token]={'seen':now,'last':0,'temporal':TemporalDecision(min_samples=4,max_gap=2.0,window_seconds=4.0)}
+        sessions[token]={'seen':now,'last':0,'temporal':FastBinaryDecision(window_seconds=0.8,max_gap=2.0)}
     return jsonify(token=token)
 
 @app.delete('/api/session')

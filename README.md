@@ -1,5 +1,27 @@
 # Face Anti-Spoofing
 
+## API tích hợp với dự án nhận diện danh tính
+
+Chạy API local độc lập với giao diện web, chọn rõ model đã đánh giá:
+
+```powershell
+.\venv\Scripts\python.exe -m pip install -r requirements-api.txt
+.\venv\Scripts\python.exe api_app.py --model outputs/merged-corrected-20261001/liveness.h5 --labels outputs/merged-corrected-20261001/le.pickle
+```
+
+API ở `http://127.0.0.1:8000`, nhận JPEG và trả JSON thật/giả, trạng thái chất lượng,
+vị trí mặt, mã model và thời gian xử lý. Có ảnh đơn `/v1/analyze` và phiên nhiều
+khung hình `/v1/sessions`. Xem [hướng dẫn tích hợp](docs/API.md),
+[client Python](clients/antispoof_client.py) và [benchmark](scripts/benchmark_api.py).
+API dùng cùng pipeline với camera local; tốc độ còn tùy phần cứng và đường truyền.
+
+Bản sửa ngày 01/10 dùng batch cân bằng và GroupNorm/LayerNorm. Trên cùng 4.856 ảnh
+test, F1 macro trước gộp / gộp ban đầu / sau sửa là 91,90% / 89,88% / 95,16%.
+Nhóm video mới riêng vẫn thấp hơn bản trước gộp, và replay đưa ra kết luận ở
+75,80% khung so với 78,66% trước gộp; cả hai có 0 quyết định sai trong replay này.
+Đây là benchmark phát triển đã được xem trước. Xem [báo cáo chi tiết](outputs/merged-corrected-20261001/report.md)
+và [quy trình huấn luyện](docs/TRAINING.md) để đọc đầy đủ điểm đánh đổi.
+
 ## Chạy camera
 
 ```powershell
@@ -54,11 +76,19 @@ Bốn ảnh lỗi người dùng cung cấp: không phát hiện khung phụ ở
 - `tests/test_pipeline.py`: kiểm tra nền đồng màu, tiền xử lý, mất mặt, nhiều mặt và tốc độ khung hình.
 - `face_extract.py`: trích xuất dataset bằng SSD cũ.
 - `train_liveness.py`, `model/livenessnet.py`: huấn luyện CNN.
-- `liveness.h5`, `le.pickle`: model và encoder hiện có; chưa thay hoặc huấn luyện lại.
+- `liveness.h5`, `le.pickle`: model và encoder gốc dùng mặc định.
+- `outputs/retrain-20260915/`: model mới và kết quả huấn luyện lại; chọn bằng tham số đường dẫn.
 
 ## Giới hạn cần giải quyết khi huấn luyện lại
 
-Dataset train/validation đã tách theo video, chưa tách theo người và chưa có test độc lập. Detector mới thay đổi vùng cắt so với dữ liệu huấn luyện SSD cũ; cần đánh giá toàn bộ trước khi kết luận chất lượng tăng. Trích xuất dữ liệu cho lần train mới nên dùng cùng detector và kiểm tra chất lượng với inference.
+Quy trình gộp ảnh cũ và video mới, cân bằng batch, chọn model bằng validation và rà số liệu được mô tả trong [hướng dẫn huấn luyện](docs/TRAINING.md). Hướng dẫn có lệnh và bằng chứng cần giữ; model mới phải được chọn qua đường dẫn rõ ràng, không tự thay model mặc định.
+
+Lượt huấn luyện 2026-09-15 đã tách theo video: 23 video train, 5 validation và 5 test.
+Chạy 19 epoch, chọn checkpoint epoch 11. Báo cáo test lưu trong
+`outputs/retrain-20260915/evaluation.json`: 96,86% trên 3.347 ảnh, trong đó 100/1.969 ảnh
+giả bị nhận nhầm là thật. Chưa tách theo người; đây là đánh giá CNN trên ảnh cắt sẵn,
+chưa chứng minh chất lượng toàn bộ camera/API. Detector YuNet thay đổi vùng cắt so với
+dữ liệu huấn luyện SSD cũ; cần kiểm thử độc lập cả luồng trước khi kết luận chất lượng tăng.
 
 Encoder cũ dùng scikit-learn 1.6.1 còn môi trường dùng 1.7.0; vẫn có cảnh báo phiên bản. Thứ tự fake/real được kiểm tra khi tải model. Không tải model/encoder pickle không tin cậy.
 
