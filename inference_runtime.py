@@ -29,9 +29,12 @@ class LiteModel:
     def __init__(self, path):
         with _SilenceStderr():
             try:
-                from tflite_runtime.interpreter import Interpreter
+                from ai_edge_litert.interpreter import Interpreter
             except ImportError:
-                from tensorflow.lite.python.interpreter import Interpreter
+                try:
+                    from tflite_runtime.interpreter import Interpreter
+                except ImportError:
+                    from tensorflow.lite.python.interpreter import Interpreter
             self.interpreter = Interpreter(model_path=str(path), num_threads=2)
             self.interpreter.allocate_tensors()
             self.input = self.interpreter.get_input_details()[0]['index']

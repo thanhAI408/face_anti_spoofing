@@ -1,0 +1,96 @@
+\pdfcompresslevel=1
+\pdfobjcompresslevel=1
+\documentclass[12pt,a4paper]{report}
+
+% ---------- Encoding & Language ----------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[english]{babel}
+
+% ---------- Page Geometry & Spacing ----------
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{setspace}
+\onehalfspacing
+
+% ---------- Figures, Tables, Math ----------
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{float}
+\usepackage{amsmath, amssymb}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{ragged2e}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+\setlist{leftmargin=2em}
+\setlist[itemize]{nosep,leftmargin=2em}
+\newcolumntype{R}[1]{>{\RaggedLeft\arraybackslash}p{#1}}
+\newcolumntype{L}[1]{>{\RaggedRight\arraybackslash}p{#1}}
+\setlength{\arrayrulewidth}{0.4pt}
+\renewcommand{\arraystretch}{1.12}
+
+% ---------- Hyperlinks ----------
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=blue,
+    urlcolor=blue,
+    pdfauthor={Nguyen Van Thanh, Nguyen Chien Thang, Nguyen Hoang Tuyen, Le Thanh Phuong},
+    pdftitle={Real-Time Passive Face Anti-Spoofing Using Aligned Lightweight Convolutional Networks for Biometric Attendance Verification},
+}
+
+% ---------- Typography & Hyphenation ----------
+\usepackage[protrusion=true,expansion=false]{microtype}
+\usepackage[none]{hyphenat}
+\sloppy
+\emergencystretch=2em
+
+% ---------- Title Page Frame ----------
+\usepackage{tikz}
+\newcommand{\pageframe}{%
+  \begin{tikzpicture}[remember picture,overlay]
+    \draw[line width=0.8pt]
+      ([xshift=1cm,yshift=-1cm]current page.north west)
+      rectangle
+      ([xshift=-1cm,yshift=1cm]current page.south east);
+  \end{tikzpicture}%
+  \begin{tikzpicture}[remember picture,overlay]
+    \draw[line width=0.8pt]
+      ([xshift=1.1cm,yshift=-1.1cm]current page.north west)
+      rectangle
+      ([xshift=-1.1cm,yshift=1.1cm]current page.south east);
+  \end{tikzpicture}%
+}
+
+\begin{document}
+
+\input{Preamble/titlepage}
+\input{Preamble/acknowledgement}
+\input{Preamble/abstract}
+
+\tableofcontents
+\listoffigures
+\listoftables
+\clearpage
+
+\input{Chapters/Chapter 01 - Introduction}
+\input{Chapters/Chapter 02 - Theoretical Background}
+\input{Chapters/Chapter 03 - Data processing}
+\input{Chapters/Chapter 04 - Methodology}
+\input{Chapters/Chapter 05 - Result analysis}
+\input{Chapters/Chapter 06 - Conclusion}
+
+% ---------- References ----------
+\bibliographystyle{IEEEtran}
+\renewcommand{\bibname}{References}
+\bibliography{references}
+
+\end{document}

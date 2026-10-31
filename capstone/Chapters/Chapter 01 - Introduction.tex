@@ -1,0 +1,106 @@
+\chapter{Introduction}
+\label{chap:introduction}
+
+\section{Background and Motivation}
+\label{sec:background_motivation}
+
+Contactless facial recognition has become a standard authentication mechanism across enterprise access control, university attendance tracking, and self-service check-in terminals. Modern deep metric-learning models, particularly additive angular margin architectures such as ArcFace~\cite{deng2019arcface}, achieve high verification accuracy on unconstrained monocular RGB images captured by commodity webcams. Despite strong identity discrimination, standard face recognition pipelines optimize solely for inter-class identity separation and remain inherently blind to physical liveness. When an unprotected attendance terminal observes a photograph printed on paper or a high-resolution portrait video replayed on a smartphone screen, the extracted facial embedding closely matches the enrolled template of the legitimate user, allowing unauthorized check-ins without specialized equipment~\cite{anjos2011counter, yu2023deep}.
+
+In biometric security terminology standardized by ISO/IEC 30107-3~\cite{iso30107_3}, deliberate attempts to subvert a biometric capture sensor using physical artifacts are classified as presentation attacks, and the artifacts themselves---such as printed sheets, mobile displays, or three-dimensional masks---are termed Presentation Attack Instruments (PAIs). Presentation Attack Detection (PAD), commonly referred to as face anti-spoofing or liveness detection, acts as a security gate positioned upstream of or in parallel with identity matching. Commercial deployments in banking kiosks and flagship smartphones frequently rely on specialized multi-spectral sensors, including near-infrared (NIR) illuminators, structured-light depth projectors, or time-of-flight cameras~\cite{george2020biometric}. While active depth and thermal sensors simplify the separation of planar displays from three-dimensional facial geometry, their hardware cost, calibration requirements, and driver constraints prohibit widespread adoption in budget-constrained classrooms, small-to-medium offices, and browser-based attendance portals that operate exclusively on standard USB or integrated laptop RGB cameras.
+
+Passive monocular RGB face anti-spoofing offers a hardware-agnostic alternative by inferring liveness directly from a conventional video stream without requiring user cooperation (such as prompted blinking or head-turn challenges, which slow throughput at busy entry points and remain vulnerable to pre-recorded video replay). Designing a reliable passive RGB PAD subsystem for real-time attendance verification nevertheless introduces three practical engineering tensions:
+\begin{enumerate}
+    \item \textbf{Sensor and domain sensitivity:} Subtle optical cues that distinguish live skin from electronic displays---such as subpixel moir\'{e} patterns, specular glass reflections, color gamut compression, and defocus blur---shift substantially across camera sensors, video compression containers, and indoor lighting conditions~\cite{wen2015face, jia2020single}.
+    \item \textbf{Strict CPU latency budgets:} Edge attendance terminals routinely lack discrete graphics processing units (GPUs). Running face detection, identity embedding extraction, and anti-spoofing concurrently on a host CPU requires the PAD network to execute in sub-millisecond to low-millisecond budgets so that live video feedback remains responsive at $30$~frames per second (FPS).
+    \item \textbf{Temporal decision stability:} Frame-by-frame softmax thresholding produces erratic visual flickering when a subject moves momentarily through overhead glare or motion blur, degrading user usability in interactive check-in kiosks and risking transient false acceptances in automated APIs.
+\end{enumerate}
+
+Motivated by these operational constraints, this thesis investigates, designs, and validates an end-to-end passive RGB face anti-spoofing framework built around an aligned lightweight convolutional network (\texttt{LivenessNet}), multi-source normalization and sampling diagnostics, low-latency LiteRT CPU execution, and fail-closed integration into a real-time WebSocket biometric attendance application.
+
+\section{Literature Review}
+\label{sec:literature_review}
+
+Research on monocular RGB face presentation attack detection has progressed from handcrafted micro-texture descriptors to specialized deep convolutional architectures and cross-domain training paradigms. It should be noted that the objective of this subsection is to establish the practical necessity and research positioning of the present study rather than to examine mathematical formulations in full detail; a rigorous architectural and algorithmic analysis is deferred to Section~\ref{sec:exist_frameworks_algorithms} (\emph{Existing Frameworks and Algorithms}).
+
+Early passive anti-spoofing studies observed that recapturing a face through a print medium or liquid-crystal display alters local spatial frequencies and color distributions. Chingovska et al.~\cite{chingovska2012effectiveness} established Local Binary Patterns (LBP) on the Replay-Attack benchmark~\cite{anjos2011counter}, while Zhang et al.~\cite{zhang2012face} introduced multi-scale DoG filtering on CASIA-FASD to isolate high-frequency screen noise and loss of facial edge sharpness. Wen et al.~\cite{wen2015face} formalized Image Distortion Analysis (IDA) using specular reflection, blurriness, chromatic moment, and color diversity features, and Boulkenafet et al.~\cite{boulkenafet2016face} demonstrated that extracting texture descriptors in luminance-chrominance spaces ($YC_bC_r$ and HSV) substantially outperforms grayscale analysis. Although computationally inexpensive on CPUs, handcrafted descriptors exhibit brittle thresholds when camera Automatic White Balance (AWB) or sensor resolution changes, as later documented on mobile benchmarks such as OULU-NPU~\cite{boulkenafet2017oulu}.
+
+To overcome manual feature design, deep learning methods trained convolutional neural networks (CNNs) directly on facial crops or auxiliary supervisory signals. Liu et al.~\cite{liu2018learning} supervised a CNN-RNN architecture using pseudo-depth maps and remote photoplethysmography (rPPG) pulse signals, steering the network away from subject identity features toward geometric cues. Yu et al.~\cite{yu2020searching} introduced Central Difference Convolution Networks (CDCN) to combine intensity-level semantics with gradient-level micro-texture differentials. Large-scale benchmarks such as CelebA-Spoof~\cite{zhang2020celeba} enabled deeper backbones, whereas Wang et al.~\cite{wang2022patchnet} proposed PatchNet, showing that formulating anti-spoofing as fine-grained local patch recognition prevents global identity memorization and improves sensitivity to surface material properties. Concurrently, domain generalization studies such as Single-Side Domain Generalization (SSDG)~\cite{jia2020single} highlighted that naive pooling of heterogeneous datasets still suffers from covariate shift unless feature normalization is carefully controlled.
+
+\begin{table}[htbp]
+\centering
+\caption{Summary of representative passive RGB face anti-spoofing paradigms and deployment trade-offs.}
+\label{tab:lit_summary}
+\small
+\begin{tabular}{L{3.1cm}L{3.2cm}L{3.8cm}L{4.0cm}}
+\toprule
+\textbf{Paradigm} & \textbf{Representative Works} & \textbf{Primary Strengths} & \textbf{Deployment Limitations} \\
+\midrule
+Handcrafted Color \& Texture & LBP~\cite{chingovska2012effectiveness}, IDA~\cite{wen2015face}, Colour-LBP~\cite{boulkenafet2016face} & Low CPU cost; interpretable optical priors; minimal training data required. & Sensitive to AWB shifts, high-PPI OLED screens, and illumination variance. \\
+\addlinespace[3pt]
+Auxiliary Depth \& Physiological CNNs & Auxiliary Depth + rPPG~\cite{liu2018learning}, CDCN~\cite{yu2020searching} & Strong separation of planar vs.\ 3D live faces; reduced identity overfitting. & Multi-megabyte dense feature maps; elevated CPU latency without GPU acceleration. \\
+\addlinespace[3pt]
+Domain-Generalized \& Multi-Channel PAD & MCCNN~\cite{george2020biometric}, SSDG~\cite{jia2020single}, Survey~\cite{yu2023deep} & Improved cross-sensor transfer across heterogeneous acquisition domains. & Requires multi-domain adversarial/triplet training or auxiliary IR channels. \\
+\addlinespace[3pt]
+Local Patch \& Lightweight CNNs & PatchNet~\cite{wang2022patchnet}, MobileNetV3~\cite{howard2019searching} & Suppresses global identity cues; compact memory footprint suitable for edge CPUs. & Single-frame predictions flicker under motion/glare; vulnerable to BatchNorm drift under imbalanced merges. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:lit_summary} synthesizes these four research directions. A clear operational gap persists between academic benchmark models and deployable CPU attendance systems: methods with strong anti-spoofing accuracy frequently rely on heavy multi-branch architectures evaluated offline on isolated frames, whereas lightweight CNNs often suffer from evaluation leakage (frame-level random splits from identical videos), normalization miscalibration when combining uneven video cohorts, and unstable single-frame decision logic during live camera streaming.
+
+\section{Problem Statement}
+\label{sec:problem_statement}
+
+Consider an indoor biometric attendance station equipped with a single commercial RGB camera---specifically a high-definition USB camera (SC-M200) or an integrated laptop webcam---operating on a CPU-only host workstation. At check-in time $t$, the sensor captures a video sequence $\{I_t\}$ containing zero, one, or multiple human subjects or spoof artifacts. An identity recognition module extracts facial embeddings from detected faces and matches them against an enrolled employee gallery. Without an effective presentation attack gate, an adversary presenting a smartphone video replay, tablet display, or printed portrait of an enrolled employee will exceed the cosine similarity verification threshold and trigger a fraudulent attendance record.
+
+Formally, the engineering and research problem addressed in this thesis is divided into three coupled sub-problems:
+\begin{enumerate}
+    \item \textbf{Leakage-free compact representation learning under domain and imbalance constraints:} How to train a sub-megabyte-class convolutional classifier on local $32\times32$ RGB facial regions such that it generalizes to strictly unseen human subjects on target 4K/FHD USB camera hardware, while preventing data leakage across video frames, background holder faces, and multi-source dataset merges where naive loss weighting corrupts Batch Normalization moving statistics.
+    \item \textbf{Real-time CPU inference and temporal stabilization:} How to pair millisecond-level face detection, multi-face bounding-box tracking, and frozen-graph CPU inference with temporal score aggregation so that live interactive terminals sustain $30$~FPS without frame lag or label oscillation, while stateless and stateful HTTP APIs enforce fail-closed security semantics.
+    \item \textbf{End-to-end biometric attendance gating:} How to couple the liveness subsystem with an ArcFace-based recognition pipeline where detector bounding-box geometries differ (SCRFD vs.\ YuNet), ensuring spoof attacks are deterministically rejected prior to attendance logging with minimal false rejection of bona fide users.
+\end{enumerate}
+
+\section{Objectives and Contributions}
+\label{sec:objectives_contributions}
+
+The \textbf{general objective} of this thesis is to design, rigorously audit, and deploy a passive monocular RGB face anti-spoofing system capable of protecting real-time CPU-based facial attendance verification against two-dimensional screen replay and print presentation attacks.
+
+To fulfill this goal, the project establishes five measurable \textbf{specific objectives}:
+\begin{itemize}
+    \item Curate and audit person-disjoint video benchmarks, culminating in a dedicated $91$-video target-sensor corpus (\texttt{Cam4K}) recorded on a USB SC-M200 camera ($26{,}094$ extracted face crops across $140{,}707$ raw frames) alongside multi-source webcam cohorts ($28{,}957$ merged crops).
+    \item Diagnose and resolve training pathologies in multi-source anti-spoofing, specifically eliminating frame-level split leakage, container/detector shortcuts, and Batch Normalization calibration drift under high-variance sample weights.
+    \item Achieve an Average Classification Error Rate ($\text{ACER}$) below $2.5\%$ and video-level classification accuracy above $95\%$ on strictly subject-disjoint test videos while keeping classifier inference latency under $1.0$~ms on a standard laptop CPU.
+    \item Implement a unified runtime architecture supporting both $30$~FPS multi-threaded desktop camera operation (with automatic USB disconnect recovery and virtual-camera filtering) and a documented REST microservice (\texttt{/v1}) with multi-frame temporal hysteresis.
+    \item Integrate the anti-spoofing gate into a browser-accessible WebSocket attendance system (\texttt{ChamCong\_FaceID}) backed by calibrated ArcFace prototype matching and cooldown-protected audit logging.
+\end{itemize}
+
+The \textbf{main technical contributions} delivered by this work are fourfold:
+\begin{enumerate}
+    \item \textbf{Empirical diagnosis of BatchNorm drift and stratified multi-source stabilization:} Through controlled ablation on an $89$-video merged benchmark, this study proves that combining imbalanced video sources via scalar loss weights ($52.75\times$ weight ratio) degrades Batch Normalization inference statistics, causing Attack Presentation Classification Error Rate ($\text{APCER}$) to double from $7.88\%$ to $16.16\%$. Replacing weighted uniform sampling with persistent round-robin $(source, class)$ stratified mini-batches, Group/Layer Normalization, and hierarchical validation loss selection reduces $\text{ACER}$ to $4.82\%$ and eliminates false decisions in continuous session replay.
+    \item \textbf{Target-sensor \texttt{Cam4K} benchmark and WiSE-FT aligned transfer:} A person-disjoint $91$-video dataset was acquired on the target SC-M200 camera with automated holder-face spatial masking. Adapting the \texttt{LivenessNet} classifier head atop a frozen multi-source convolutional backbone and applying weight-space ensembling ($\theta^* = 0.75\,\theta_{\text{cam4k}} + 0.25\,\theta_{\text{anchor}}$)~\cite{wortsman2022robust} yields $98.09\%$ frame accuracy, $\text{ACER} = 1.94\%$, and $100.00\%$ ($14/14$) video-level accuracy on unseen test subjects, while preserving $99.84\%$ accuracy on $600$ external laptop-webcam crops.
+    \item \textbf{Sub-millisecond LiteRT runtime and dual-policy temporal tracking:} Exporting \texttt{LivenessNet} ($545{,}154$ parameters, $2.15$~MiB) to a frozen LiteRT flatbuffer executed via XNNPACK reduces per-crop CPU inference latency to a median of $0.163$~ms ($0.182$~ms at P95). Paired with YuNet ONNX face detection and IoU track association, the pipeline provides both a recency-weighted binary stabilizer (\texttt{FastBinaryDecision}) for flicker-free $30$~FPS UI feedback and a $6$-observation fail-closed hysteresis state machine (\texttt{TemporalDecision}) for REST API sessions.
+    \item \textbf{ROI-aligned \texttt{LivenessGate} integration for ArcFace attendance:} To bridge geometric discrepancies between InsightFace SCRFD face boxes and \texttt{LivenessNet} training crops, a dedicated \texttt{LivenessGate} re-localizes faces via YuNet inside padded SCRFD regions before liveness scoring, protecting an ArcFace attendance engine calibrated at cosine threshold $\tau = 0.55$ via leave-one-video-out and leave-one-person-out protocols.
+\end{enumerate}
+
+\section{Scope and Limitations}
+\label{sec:scope_limitations}
+
+To maintain engineering focus and experimental rigor within the capstone timeline, the scope of this work is bounded along four dimensions:
+\begin{itemize}
+    \item \textbf{Sensor modality:} All experiments and deployments operate strictly on single-stream monocular RGB imagery ($8$-bit BGR frames) from commodity USB (SC-M200) and integrated laptop webcams. Near-infrared, depth, thermal, and acoustic sensors are excluded by design to preserve zero-hardware-upgrade deployability.
+    \item \textbf{Attack taxonomy:} Training and quantitative evaluation focus primarily on two-dimensional electronic screen replay attacks (smartphones, tablets, and external monitors across varied brightness and viewing angles), supplemented by optical print-shield heuristics in YCrCb/HSV space. High-precision three-dimensional flexible silicone masks, theatrical prosthetics, and digital injection attacks (virtual camera driver spoofing at the kernel level, beyond solid-color virtual-screen filtering) fall outside the empirical corpus.
+    \item \textbf{Operating environment:} The system targets indoor office and classroom check-in stations with frontal to moderate head pose variations ($\pm 25^\circ$ yaw/pitch), subject-to-camera distances of approximately $0.35$~m to $1.20$~m, and minimum detected facial bounding-box side lengths of $65$--$80$~pixels.
+    \item \textbf{Passive interaction model:} Verification is entirely passive; active challenge-response prompts (e.g., randomized gaze tracking or spoken passphrases) are intentionally omitted to keep check-in turnaround below one second per employee.
+\end{itemize}
+
+\section{Structure of the Thesis}
+\label{sec:thesis_structure}
+
+The remainder of this thesis is organized into five chapters that progress systematically from theoretical foundations to dataset engineering, system architecture, empirical evaluation, and conclusions:
+\begin{itemize}
+    \item \textbf{Chapter~\ref{chap:theoretical_background} (Theoretical Background)} formalizes the ISO/IEC 30107-3 presentation attack taxonomy, optical distortion principles, convolutional feature extraction, feature normalization mechanics under imbalanced mini-batches, weight-space fine-tuning, and existing detection/recognition frameworks.
+    \item \textbf{Chapter~\ref{chap:data_processing} (Data Processing)} documents the multi-phase video acquisition cohorts, Caffe SSD and YuNet ROI extraction pipelines, background holder spatial masking, six-stage optical quality filtering, $32\times32$ patch representation rationale, and strict person-disjoint splitting protocols.
+    \item \textbf{Chapter~\ref{chap:methodology} (Methodology)} details the end-to-end workflow, the $545{,}154$-parameter \texttt{LivenessNet} architecture, stratified and video-balanced training algorithms with WiSE-FT head interpolation, LiteRT XNNPACK compilation, multi-threaded camera/REST runtimes, and the \texttt{ChamCong\_FaceID} attendance integration.
+    \item \textbf{Chapter~\ref{chap:results} (Results Analysis)} reports comprehensive frame-level, video-level, session-replay, cross-camera, and CPU/HTTP latency evaluations, alongside qualitative visual inspections, failure-case error analyses, literature comparisons, and multi-factor ablation studies.
+    \item \textbf{Chapter~\ref{chap:conclusion} (Conclusion)} summarizes the degree to which each research objective was met, examines residual operational limitations, and outlines concrete directions for future investigation.
+\end{itemize}

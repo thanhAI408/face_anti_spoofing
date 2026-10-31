@@ -49,3 +49,21 @@ __pycache__/
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+
+# Giữ trọn vẹn thư mục luận án tốt nghiệp (bao gồm hình ảnh .jpg/.png trong capstone/)
+!capstone/
+!capstone/**
+!capstone/Images/*.jpg
+!capstone/Images/*.jpeg
+!capstone/Images/*.png
+capstone/**/*.aux
+capstone/**/*.bbl
+capstone/**/*.blg
+capstone/**/*.lof
+capstone/**/*.log
+capstone/**/*.lot
+capstone/**/*.out
+capstone/**/*.toc
+capstone/**/*.fls
+capstone/**/*.fdb_latexmk
+capstone/**/*.synctex.gz
