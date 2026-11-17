@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Đăng ký người mới</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0;background:#0F1417}
+a{color:#9AD9FF}a:hover{color:#CDEBFF}
+.cam{background-color:#0A0E10;background-image:linear-gradient(rgba(255,255,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.04) 1px,transparent 1px);background-size:40px 40px}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #0F1417; color: #E8EEF1; font-family: 'Be Vietnam Pro', system-ui, sans-serif; font-size: 15px; line-height: 1.5">
+<header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 32px; border-bottom: 1px solid #26323A; background: #121A1E">
+<div style="display: flex; align-items: center; gap: 12px">
+<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#5CC8FF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V5a1 1 0 0 1 1-1h3"></path><path d="M16 4h3a1 1 0 0 1 1 1v3"></path><path d="M20 16v3a1 1 0 0 1-1 1h-3"></path><path d="M8 20H5a1 1 0 0 1-1-1v-3"></path><circle cx="12" cy="10" r="3"></circle><path d="M7 17c1.2-2 3-3 5-3s3.8 1 5 3"></path></svg>
+<div style="font-weight: 700; font-size: 18px">FaceID Lab</div>
+</div>
+<nav aria-label="Màn hình" style="display: flex; flex-wrap: wrap; gap: 4px; background: #0F1417; border: 1px solid #26323A; border-radius: 10px; padding: 4px">
+<a href="Main.dc.html" style="padding: 8px 16px; border-radius: 7px; color: #B4C1C9; text-decoration: none; font-weight: 500; min-height: 44px; box-sizing: border-box; display: flex; align-items: center">Nhận diện</a>
+<a href="Enroll.dc.html" aria-current="page" style="padding: 8px 16px; border-radius: 7px; background: #24313A; color: #E8EEF1; text-decoration: none; font-weight: 600; min-height: 44px; box-sizing: border-box; display: flex; align-items: center">Đăng ký</a>
+<a href="Report.dc.html" style="padding: 8px 16px; border-radius: 7px; color: #B4C1C9; text-decoration: none; font-weight: 500; min-height: 44px; box-sizing: border-box; display: flex; align-items: center">Đánh giá</a>
+</nav>
+<div style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #B4C1C9; padding: 6px 10px; border: 1px solid #26323A; border-radius: 999px">GPU Colab · T4</div>
+</header>
+
+<main style="max-width: 1120px; margin: 0 auto; padding: 32px 32px 48px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<h1 style="margin: 0; font-size: 28px; font-weight: 700">Đăng ký người mới</h1>
+<p style="margin: 0; color: #9AA8B1">Quay vài video ngắn, hệ thống tự lọc frame tốt và tạo hồ sơ khuôn mặt. Không cần gán nhãn từng ảnh.</p>
+</div>
+
+<ol style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+<sc-for list="{{steps}}" as="s" hint-placeholder-count="3">
+<li>
+<button type="button" onClick="{{s.go}}" aria-current="{{s.current}}" style="width: 100%; min-height: 64px; text-align: left; padding: 12px 16px; border-radius: 12px; border: 1px solid {{s.border}}; background: {{s.bg}}; color: #E8EEF1; font: inherit; cursor: pointer; display: flex; align-items: center; gap: 12px">
+<span style="width: 30px; height: 30px; flex: none; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-weight: 500; background: {{s.dotBg}}; color: {{s.dotFg}}">{{s.num}}</span>
+<span style="display: flex; flex-direction: column"><span style="font-weight: 600">{{s.title}}</span><span style="font-size: 13px; color: #9AA8B1">{{s.sub}}</span></span>
+</button>
+</li>
+</sc-for>
+</ol>
+
+<sc-if value="{{isStep1}}" hint-placeholder-val="{{ false }}">
+<section style="background: #182026; border: 1px solid #26323A; border-radius: 14px; padding: 24px; display: flex; flex-direction: column; gap: 18px; max-width: 560px">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<label for="pname" style="font-weight: 600">Tên hiển thị</label>
+<input id="pname" type="text" value="Nga" style="min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #33424C; background: #0F1417; color: #E8EEF1; font: inherit">
+<span style="font-size: 13px; color: #9AA8B1">Viết không dấu (vd. nguyen_van_a) để hiển thị đúng trên khung camera.</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<label for="pid" style="font-weight: 600">Mã sinh viên / nhân viên</label>
+<input id="pid" type="text" placeholder="[MÃ SỐ]" style="min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #33424C; background: #0F1417; color: #E8EEF1; font: inherit">
+</div>
+<button type="button" onClick="{{goStep2}}" style="align-self: flex-start; min-height: 44px; padding: 0 22px; border-radius: 10px; border: none; background: #5CC8FF; color: #0F1417; font: inherit; font-weight: 700; cursor: pointer">Tiếp tục</button>
+</section>
+</sc-if>
+
+<sc-if value="{{isStep2}}" hint-placeholder-val="{{ true }}">
+<section style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+<div style="flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 14px">
+<div class="cam" style="position: relative; aspect-ratio: 4 / 3; border-radius: 14px; border: 1px solid #26323A; overflow: hidden">
+<div style="position: absolute; left: 50%; top: 48%; width: 42%; height: 62%; transform: translate(-50%, -50%); border: 2px dashed #5CC8FF; border-radius: 50%"></div>
+<div style="position: absolute; left: 0; right: 0; bottom: 14px; text-align: center; font-size: 14px; color: #B4C1C9">Đưa khuôn mặt vào khung · chỉ một người trong hình</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+<div style="background: #182026; border: 1px solid #26323A; border-radius: 10px; padding: 10px 12px; font-size: 13px"><div style="font-weight: 600">Nhìn thẳng</div><div style="color: #9AA8B1">10 giây</div></div>
+<div style="background: #182026; border: 1px solid #26323A; border-radius: 10px; padding: 10px 12px; font-size: 13px"><div style="font-weight: 600">Xoay nhẹ trái/phải</div><div style="color: #9AA8B1">dưới 35°</div></div>
+<div style="background: #182026; border: 1px solid #26323A; border-radius: 10px; padding: 10px 12px; font-size: 13px"><div style="font-weight: 600">Ánh sáng khác</div><div style="color: #9AA8B1">trong nhà / gần cửa</div></div>
+</div>
+<button type="button" style="min-height: 48px; border-radius: 10px; border: none; background: #FF5A5A; color: #0F1417; font: inherit; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 10px"><span style="width: 10px; height: 10px; border-radius: 50%; background: #0F1417"></span>Quay video tiếp theo</button>
+</div>
+
+<div style="flex: 1 1 420px; min-width: 0; background: #182026; border: 1px solid #26323A; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px">
+<h2 style="margin: 0; font-size: 16px; font-weight: 600">Chất lượng từng video</h2>
+<span style="font-size: 12px; color: #9AA8B1">120 frame lấy mẫu / video</span>
+</div>
+<sc-for list="{{clips}}" as="c" hint-placeholder-count="4">
+<div style="display: flex; flex-direction: column; gap: 6px; padding-top: 10px; border-top: 1px solid #222C33">
+<div style="display: flex; justify-content: space-between; gap: 8px; font-size: 14px">
+<span style="font-weight: 500">{{c.name}}</span>
+<span style="font-family: 'IBM Plex Mono', monospace; color: #B4C1C9">{{c.ok}} frame tốt</span>
+</div>
+<div style="display: flex; height: 10px; border-radius: 999px; overflow: hidden; background: #26323A">
+<div style="width: {{c.okPct}}%; background: #5CC8FF"></div>
+<div style="width: {{c.blurPct}}%; background: #E2711D"></div>
+<div style="width: {{c.posePct}}%; background: #8A6BD1"></div>
+</div>
+<sc-if value="{{c.warn}}" hint-placeholder-val="{{ false }}">
+<div style="font-size: 13px; color: #F2B544">Gần một nửa frame bị mờ — quay lại nơi sáng hơn, giữ máy yên.</div>
+</sc-if>
+</div>
+</sc-for>
+<div style="display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; color: #B4C1C9">
+<span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; border-radius: 3px; background: #5CC8FF"></span>Dùng được</span>
+<span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; border-radius: 3px; background: #E2711D"></span>Mờ</span>
+<span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; border-radius: 3px; background: #8A6BD1"></span>Nghiêng quá 35°</span>
+</div>
+<div style="font-size: 13px; color: #9AA8B1">Số liệu thật từ 4 video của Nga trong preprocessing_log.txt.</div>
+<button type="button" onClick="{{goStep3}}" style="align-self: flex-start; min-height: 44px; padding: 0 22px; border-radius: 10px; border: none; background: #5CC8FF; color: #0F1417; font: inherit; font-weight: 700; cursor: pointer">Tạo hồ sơ khuôn mặt</button>
+</div>
+</section>
+</sc-if>
+
+<sc-if value="{{isStep3}}" hint-placeholder-val="{{ false }}">
+<section style="background: #182026; border: 1px solid #26323A; border-radius: 14px; padding: 24px; display: flex; flex-direction: column; gap: 18px; max-width: 720px">
+<h2 style="margin: 0; font-size: 18px; font-weight: 600">Kiểm tra trước khi lưu</h2>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+<div style="background: #0F1417; border-radius: 10px; padding: 14px"><div style="font-size: 12px; color: #9AA8B1">Video hợp lệ</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 22px">4 / 4</div></div>
+<div style="background: #0F1417; border-radius: 10px; padding: 14px"><div style="font-size: 12px; color: #9AA8B1">Embedding</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 22px">292</div></div>
+<div style="background: #0F1417; border-radius: 10px; padding: 14px"><div style="font-size: 12px; color: #9AA8B1">Giống người khác nhất</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 22px">Dung 0.47</div></div>
+</div>
+<div style="display: flex; gap: 12px; align-items: flex-start; padding: 14px; border-radius: 10px; background: #1F2A1F; border: 1px solid #2F4A33">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7BE0B5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 2px"><path d="M20 6 9 17l-5-5"></path></svg>
+<div style="font-size: 14px">Dưới ngưỡng 0.55 với mọi người đã đăng ký — không trùng hồ sơ cũ.</div>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 12px">
+<button type="button" style="min-height: 44px; padding: 0 22px; border-radius: 10px; border: none; background: #5CC8FF; color: #0F1417; font: inherit; font-weight: 700; cursor: pointer">Lưu vào danh sách</button>
+<button type="button" onClick="{{goStep2}}" style="min-height: 44px; padding: 0 18px; border-radius: 10px; border: 1px solid #33424C; background: transparent; color: #E8EEF1; font: inherit; cursor: pointer">Quay thêm video</button>
+</div>
+</section>
+</sc-if>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":980}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { step: 2 };
+  }
+  renderVals() {
+    const step = this.state.step;
+    const go = (n) => () => this.setState({ step: n });
+    const defs = [
+      { num: '1', title: 'Thông tin', sub: 'Tên và mã số' },
+      { num: '2', title: 'Quay video', sub: '2–4 video, mỗi video 10 giây' },
+      { num: '3', title: 'Xác nhận', sub: 'Kiểm tra trùng và lưu' },
+    ];
+    const steps = defs.map((d, i) => {
+      const n = i + 1;
+      const active = n === step;
+      const done = n < step;
+      return { ...d, go: go(n), current: active ? 'step' : 'false',
+        border: active ? '#5CC8FF' : '#26323A', bg: active ? '#182A35' : '#182026',
+        dotBg: active || done ? '#5CC8FF' : '#26323A', dotFg: active || done ? '#0F1417' : '#B4C1C9' };
+    });
+    // preprocessing_log.txt: frame dùng được / mờ / nghiêng trên 120 frame mẫu
+    const clips = [
+      { name: 'Nga.mp4', ok: 90, blur: 7, pose: 23 },
+      { name: 'Nga 1.mp4', ok: 83, blur: 4, pose: 33 },
+      { name: 'Nga 2.mp4', ok: 55, blur: 55, pose: 10 },
+      { name: 'Nga 3.mp4', ok: 64, blur: 56, pose: 0 },
+    ].map((c) => ({ ...c, okPct: (c.ok / 120 * 100).toFixed(1), blurPct: (c.blur / 120 * 100).toFixed(1),
+      posePct: (c.pose / 120 * 100).toFixed(1), warn: c.blur / 120 > 0.4 }));
+    return {
+      steps, clips,
+      isStep1: step === 1, isStep2: step === 2, isStep3: step === 3,
+      goStep2: go(2), goStep3: go(3),
+    };
+  }
+}
+</script>
+</body>
+</html>

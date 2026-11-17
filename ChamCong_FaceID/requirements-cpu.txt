@@ -1,0 +1,13 @@
+# Máy không có GPU NVIDIA (vd. chỉ có Intel Iris Xe): chạy realtime bằng CPU.
+#   python -m venv .venv
+#   .venv\Scripts\python -m pip install -r requirements-cpu.txt
+#   .venv\Scripts\python real_time_inferent.py
+# face_runtime.py tự fallback sang CPU khi không có CUDA; đặt INSIGHTFACE_USE_CUDA=0 để bỏ qua bước thử GPU.
+insightface==2.0
+numpy==1.26.4
+opencv-python==4.11.0.86
+onnxruntime==1.23.2
+
+# Giao diện web (app.py): .venv\Scripts\python -m uvicorn app:app --port 8000
+fastapi==0.115.12
+uvicorn[standard]==0.34.2

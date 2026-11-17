@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Nhận diện trực tiếp</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0;background:#0F1417}
+a{color:#9AD9FF}a:hover{color:#CDEBFF}
+.cam{background-color:#0A0E10;background-image:linear-gradient(rgba(255,255,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.04) 1px,transparent 1px);background-size:48px 48px}
+input[type=range]{accent-color:#5CC8FF}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #0F1417; color: #E8EEF1; font-family: 'Be Vietnam Pro', system-ui, sans-serif; font-size: 15px; line-height: 1.5">
+<header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 32px; border-bottom: 1px solid #26323A; background: #121A1E">
+<div style="display: flex; align-items: center; gap: 12px">
+<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#5CC8FF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V5a1 1 0 0 1 1-1h3"></path><path d="M16 4h3a1 1 0 0 1 1 1v3"></path><path d="M20 16v3a1 1 0 0 1-1 1h-3"></path><path d="M8 20H5a1 1 0 0 1-1-1v-3"></path><circle cx="12" cy="10" r="3"></circle><path d="M7 17c1.2-2 3-3 5-3s3.8 1 5 3"></path></svg>
+<div style="font-weight: 700; font-size: 18px; letter-spacing: 0.2px">FaceID Lab</div>
+</div>
+<nav aria-label="Màn hình" style="display: flex; flex-wrap: wrap; gap: 4px; background: #0F1417; border: 1px solid #26323A; border-radius: 10px; padding: 4px">
+<a href="Main.dc.html" aria-current="page" style="padding: 8px 16px; border-radius: 7px; background: #24313A; color: #E8EEF1; text-decoration: none; font-weight: 600; min-height: 44px; box-sizing: border-box; display: flex; align-items: center">Nhận diện</a>
+<a href="Enroll.dc.html" style="padding: 8px 16px; border-radius: 7px; color: #B4C1C9; text-decoration: none; font-weight: 500; min-height: 44px; box-sizing: border-box; display: flex; align-items: center">Đăng ký</a>
+<a href="Report.dc.html" style="padding: 8px 16px; border-radius: 7px; color: #B4C1C9; text-decoration: none; font-weight: 500; min-height: 44px; box-sizing: border-box; display: flex; align-items: center">Đánh giá</a>
+</nav>
+<div style="display: flex; flex-wrap: wrap; gap: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 13px">
+<span style="padding: 6px 10px; border: 1px solid #26323A; border-radius: 999px; color: #B4C1C9">CPU · ONNX Runtime</span>
+<span style="padding: 6px 10px; border: 1px solid #26323A; border-radius: 999px; color: #B4C1C9">{{fpsLabel}}</span>
+<span style="padding: 6px 10px; border: 1px solid #26323A; border-radius: 999px; color: #B4C1C9">11 người đã đăng ký</span>
+</div>
+</header>
+
+<main style="max-width: 1440px; margin: 0 auto; padding: 24px 32px 40px; box-sizing: border-box; display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+
+<section aria-label="Camera" style="flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+<div class="cam" style="position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: 14px; overflow: hidden; border: 1px solid #26323A">
+<div style="position: absolute; left: 16px; top: 14px; display: flex; gap: 8px; align-items: center; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #B4C1C9; z-index: 2">
+<sc-if value="{{running}}" hint-placeholder-val="{{ true }}">
+<span style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; background: rgba(15,20,23,0.8); border-radius: 6px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #FF5A5A"></span>LIVE</span>
+</sc-if>
+<sc-if value="{{paused}}" hint-placeholder-val="{{ false }}">
+<span style="padding: 4px 8px; background: rgba(15,20,23,0.8); border-radius: 6px">TẠM DỪNG</span>
+</sc-if>
+<span style="padding: 4px 8px; background: rgba(15,20,23,0.8); border-radius: 6px">CAM 0 · 1280×720</span>
+</div>
+<div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #4A5A64; font-size: 14px">[Khung hình webcam]</div>
+<sc-for list="{{faces}}" as="f" hint-placeholder-count="3">
+<div style="position: absolute; left: {{f.x}}%; top: {{f.y}}%; width: {{f.w}}%; height: {{f.h}}%; border: 2px solid {{f.color}}; border-radius: 10px; box-sizing: border-box">
+<div style="position: absolute; left: -2px; bottom: 100%; margin-bottom: 6px; white-space: nowrap; padding: 3px 8px; border-radius: 6px; background: {{f.color}}; color: #0F1417; font-weight: 600; font-size: 13px">{{f.tag}}</div>
+</div>
+</sc-for>
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center">
+<button type="button" onClick="{{togglePause}}" style="min-height: 44px; padding: 0 18px; border-radius: 10px; border: 1px solid #33424C; background: #182026; color: #E8EEF1; font: inherit; font-weight: 600; cursor: pointer">{{pauseLabel}}</button>
+<button type="button" style="min-height: 44px; padding: 0 18px; border-radius: 10px; border: 1px solid #33424C; background: #182026; color: #E8EEF1; font: inherit; font-weight: 600; cursor: pointer">Chụp khung hình</button>
+<button type="button" role="switch" aria-checked="{{logOnStr}}" onClick="{{toggleLog}}" style="min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #33424C; background: #182026; color: #E8EEF1; font: inherit; cursor: pointer; display: inline-flex; align-items: center; gap: 10px">
+<span style="width: 36px; height: 20px; border-radius: 999px; background: {{switchTrack}}; position: relative; display: inline-block"><span style="position: absolute; top: 2px; left: {{switchKnob}}px; width: 16px; height: 16px; border-radius: 50%; background: #F5F8FA"></span></span>
+Ghi log điểm danh
+</button>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+<sc-for list="{{faces}}" as="f" hint-placeholder-count="3">
+<div style="background: #182026; border: 1px solid #26323A; border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; min-width: 0">
+<div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px">
+<span style="font-weight: 600; font-size: 16px; color: {{f.color}}">{{f.tag}}</span>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #B4C1C9">{{f.scoreStr}}</span>
+</div>
+<div style="position: relative; height: 8px; border-radius: 999px; background: #26323A">
+<div style="position: absolute; left: 0; top: 0; bottom: 0; width: {{f.pct}}%; border-radius: 999px; background: {{f.color}}"></div>
+<div style="position: absolute; top: -4px; bottom: -4px; left: {{thresholdPct}}%; width: 2px; background: #E8EEF1"></div>
+</div>
+<div style="font-size: 13px; color: #9AA8B1">Gần nhất: {{f.best}}</div>
+</div>
+</sc-for>
+</div>
+</section>
+
+<aside style="flex: 1 1 340px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+<section style="background: #182026; border: 1px solid #26323A; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; justify-content: space-between; align-items: baseline">
+<label for="thr" style="font-weight: 600; font-size: 16px">Ngưỡng nhận diện</label>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 500; color: #5CC8FF">{{thresholdStr}}</span>
+</div>
+<input id="thr" type="range" min="0.30" max="0.80" step="0.05" value="{{threshold}}" onChange="{{onThreshold}}" style="width: 100%; min-height: 32px">
+<div style="display: flex; justify-content: space-between; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #9AA8B1"><span>0.30 · dễ</span><span>0.80 · chặt</span></div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+<div style="background: #0F1417; border-radius: 10px; padding: 12px">
+<div style="font-size: 12px; color: #9AA8B1">Người quen nhận đúng</div>
+<div style="font-family: 'IBM Plex Mono', monospace; font-size: 20px; color: #E8EEF1">{{tar}}</div>
+</div>
+<div style="background: #0F1417; border-radius: 10px; padding: 12px">
+<div style="font-size: 12px; color: #9AA8B1">Người lạ bị nhận nhầm</div>
+<div style="font-family: 'IBM Plex Mono', monospace; font-size: 20px; color: {{farColor}}">{{far}}</div>
+</div>
+</div>
+<div style="font-size: 13px; color: #9AA8B1">Số liệu từ calibrate_threshold.py trên 37 video. Đề xuất: 0.55.</div>
+</section>
+
+<section style="background: #182026; border: 1px solid #26323A; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; justify-content: space-between; align-items: baseline">
+<h2 style="margin: 0; font-size: 16px; font-weight: 600">Nhật ký điểm danh</h2>
+<span style="font-size: 12px; color: #9AA8B1">dữ liệu minh họa</span>
+</div>
+<sc-for list="{{log}}" as="row" hint-placeholder-count="5">
+<div style="display: flex; align-items: center; gap: 12px; padding: 8px 0; border-top: 1px solid #222C33">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #9AA8B1">{{row.time}}</span>
+<span style="flex: 1; font-weight: 500; color: {{row.color}}">{{row.name}}</span>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #B4C1C9">{{row.score}}</span>
+</div>
+</sc-for>
+<a href="#" style="font-size: 14px">Xuất CSV</a>
+</section>
+
+<section style="background: #182026; border: 1px solid #26323A; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 12px">
+<h2 style="margin: 0; font-size: 16px; font-weight: 600">Đã đăng ký</h2>
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<sc-for list="{{people}}" as="p" hint-placeholder-count="11">
+<span style="padding: 5px 10px; border-radius: 8px; background: #0F1417; border: 1px solid #26323A; font-size: 13px">{{p}}</span>
+</sc-for>
+</div>
+</section>
+</aside>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"knownColor":{"editor":"color","default":"#5CC8FF","options":["#5CC8FF","#7BE0B5","#C9B6FF"]},"unknownColor":{"editor":"color","default":"#E2711D","options":["#E2711D","#F2B544","#FF7A7A"]},"$preview":{"width":1440,"height":980}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { threshold: 0.55, paused: false, logOn: true };
+  }
+  renderVals() {
+    const known = this.props.knownColor ?? '#5CC8FF';
+    const unknown = this.props.unknownColor ?? '#E2711D';
+    const t = this.state.threshold;
+    // calibrate_threshold.py: ngưỡng -> [nhận đúng, người lạ bị nhận nhầm (macro)]
+    const calib = { '0.30': [1.000, 0.481], '0.35': [1.000, 0.197], '0.40': [1.000, 0.128], '0.45': [1.000, 0.026],
+      '0.50': [1.000, 0.000], '0.55': [0.999, 0.000], '0.60': [0.997, 0.000], '0.65': [0.995, 0.000],
+      '0.70': [0.989, 0.000], '0.75': [0.980, 0.000], '0.80': [0.947, 0.000] };
+    const row = calib[t.toFixed(2)] || [0, 0];
+    const raw = [
+      { best: 'Nga', score: 0.86, x: 14, y: 26, w: 17, h: 36 },
+      { best: 'Dung', score: 0.48, x: 43, y: 32, w: 13, h: 28 },
+      { best: 'Phuc', score: 0.71, x: 68, y: 22, w: 15, h: 33 },
+    ];
+    const faces = raw.map((f) => {
+      const ok = f.score >= t;
+      return { ...f, color: ok ? known : unknown, tag: ok ? f.best : 'Người lạ',
+        scoreStr: f.score.toFixed(2), pct: Math.round(f.score * 100) };
+    });
+    const log = [
+      { time: '08:02:14', name: 'Nga', score: '0.86' },
+      { time: '08:01:57', name: 'Phuc', score: '0.71' },
+      { time: '08:01:40', name: 'Người lạ', score: '0.48' },
+      { time: '07:58:03', name: 'Hien', score: '0.91' },
+      { time: '07:55:21', name: 'Thu', score: '0.83' },
+    ].map((r) => ({ ...r, color: r.name === 'Người lạ' ? unknown : '#E8EEF1' }));
+    return {
+      faces, log,
+      people: ['A', 'B', 'bang', 'Dung', 'Hien', 'Nga', 'Phuc', 'phuong', 'thanh', 'Thu', 'Un'],
+      threshold: t,
+      thresholdStr: t.toFixed(2),
+      thresholdPct: Math.round(t * 100),
+      tar: (row[0] * 100).toFixed(1) + '%',
+      far: (row[1] * 100).toFixed(1) + '%',
+      farColor: row[1] > 0 ? unknown : '#E8EEF1',
+      running: !this.state.paused,
+      paused: this.state.paused,
+      pauseLabel: this.state.paused ? 'Tiếp tục' : 'Tạm dừng',
+      fpsLabel: this.state.paused ? '0 FPS' : '5.8 FPS',
+      logOnStr: this.state.logOn ? 'true' : 'false',
+      switchTrack: this.state.logOn ? known : '#3A4952',
+      switchKnob: this.state.logOn ? 18 : 2,
+      onThreshold: (e) => this.setState({ threshold: Math.round(parseFloat(e.target.value) * 20) / 20 }),
+      togglePause: () => this.setState({ paused: !this.state.paused }),
+      toggleLog: () => this.setState({ logOn: !this.state.logOn }),
+    };
+  }
+}
+</script>
+</body>
+</html>

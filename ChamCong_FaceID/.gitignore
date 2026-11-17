@@ -1,0 +1,12 @@
+/video_data/
+/face_classifier.pkl
+/label_encoder.pkl
+
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+/logs/
+/preprocessing_log.txt
+/faceid_*.png

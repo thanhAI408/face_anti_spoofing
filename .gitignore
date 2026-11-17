@@ -1,5 +1,11 @@
-# Dự án chấm công tích hợp riêng
-ChamCong_FaceID/
+# Dự án chấm công tích hợp (chỉ bỏ môi trường ảo và log tạm bên trong)
+ChamCong_FaceID/.venv/
+ChamCong_FaceID/venv/
+ChamCong_FaceID/__pycache__/
+ChamCong_FaceID/logs/
+ChamCong_FaceID/video_data/
+!ChamCong_FaceID/face_embeddings.npz
+!ChamCong_FaceID/face_prototypes.npz
 
 # Bỏ môi trường ảo
 venv/
@@ -16,6 +22,8 @@ env/
 *.joblib
 *.npy
 *.npz
+!ChamCong_FaceID/face_embeddings.npz
+!ChamCong_FaceID/face_prototypes.npz
 *.log
 *.csv
 *.mp4
@@ -49,6 +57,21 @@ __pycache__/
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+
+# Giữ lại bộ số liệu thực nghiệm chuẩn Cam4K dùng trong khóa luận và slide bảo vệ
+!outputs/
+outputs/*
+!outputs/cam4k-20261020/
+outputs/cam4k-20261020/*
+!outputs/cam4k-20261020/evaluation.json
+!outputs/cam4k-20261020/history.json
+!outputs/cam4k-20261020/split.json
+!outputs/cam4k-20261020/training.csv
+!outputs/cam4k-20261020/learning_curves.png
+!outputs/cam4k-20261020/best.keras
+!outputs/cam4k-restore/
+outputs/cam4k-restore/*
+!outputs/cam4k-restore/history.json
 
 # Giữ trọn vẹn thư mục luận án tốt nghiệp (bao gồm hình ảnh .jpg/.png trong capstone/)
 !capstone/

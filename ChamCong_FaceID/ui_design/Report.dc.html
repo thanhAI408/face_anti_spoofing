@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Đánh giá mô hình</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0;background:#0F1417}
+a{color:#9AD9FF}a:hover{color:#CDEBFF}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #0F1417; color: #E8EEF1; font-family: 'Be Vietnam Pro', system-ui, sans-serif; font-size: 15px; line-height: 1.5">
+<header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 32px; border-bottom: 1px solid #26323A; background: #121A1E">
+<div style="display: flex; align-items: center; gap: 12px">
+<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#5CC8FF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V5a1 1 0 0 1 1-1h3"></path><path d="M16 4h3a1 1 0 0 1 1 1v3"></path><path d="M20 16v3a1 1 0 0 1-1 1h-3"></path><path d="M8 20H5a1 1 0 0 1-1-1v-3"></path><circle cx="12" cy="10" r="3"></circle><path d="M7 17c1.2-2 3-3 5-3s3.8 1 5 3"></path></svg>
+<div style="font-weight: 700; font-size: 18px">FaceID Lab</div>
+</div>
+<nav aria-label="Màn hình" style="display: flex; flex-wrap: wrap; gap: 4px; background: #0F1417; border: 1px solid #26323A; border-radius: 10px; padding: 4px">
+<a href="Main.dc.html" style="padding: 8px 16px; border-radius: 7px; color: #B4C1C9; text-decoration: none; font-weight: 500; min-height: 44px; box-sizing: border-box; display: flex; align-items: center">Nhận diện</a>
+<a href="Enroll.dc.html" style="padding: 8px 16px; border-radius: 7px; color: #B4C1C9; text-decoration: none; font-weight: 500; min-height: 44px; box-sizing: border-box; display: flex; align-items: center">Đăng ký</a>
+<a href="Report.dc.html" aria-current="page" style="padding: 8px 16px; border-radius: 7px; background: #24313A; color: #E8EEF1; text-decoration: none; font-weight: 600; min-height: 44px; box-sizing: border-box; display: flex; align-items: center">Đánh giá</a>
+</nav>
+<div style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #B4C1C9; padding: 6px 10px; border: 1px solid #26323A; border-radius: 999px">buffalo_l · ArcFace R50</div>
+</header>
+
+<main style="max-width: 1280px; margin: 0 auto; padding: 32px 32px 48px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<h1 style="margin: 0; font-size: 28px; font-weight: 700">Đánh giá mô hình</h1>
+<p style="margin: 0; color: #9AA8B1">Mỗi frame được chấm riêng như lúc chạy realtime. Người quen: leave-one-video-out. Người lạ: bỏ hẳn một người khỏi danh sách rồi thử nhận diện người đó.</p>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px">
+<div style="background: #182026; border: 1px solid #26323A; border-radius: 12px; padding: 16px"><div style="font-size: 13px; color: #9AA8B1">Người đã đăng ký</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 30px">11</div></div>
+<div style="background: #182026; border: 1px solid #26323A; border-radius: 12px; padding: 16px"><div style="font-size: 13px; color: #9AA8B1">Video có embedding</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 30px">37</div></div>
+<div style="background: #182026; border: 1px solid #26323A; border-radius: 12px; padding: 16px"><div style="font-size: 13px; color: #9AA8B1">Frame đánh giá</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 30px">2 316</div></div>
+<div style="background: #182026; border: 1px solid #26323A; border-radius: 12px; padding: 16px"><div style="font-size: 13px; color: #9AA8B1">Top-1 đúng (chưa xét ngưỡng)</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 30px">100%</div></div>
+</div>
+
+<section style="background: #182026; border: 1px solid #26323A; border-radius: 14px; padding: 24px; display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 12px">
+<h2 style="margin: 0; font-size: 18px; font-weight: 600">Chọn ngưỡng cosine</h2>
+<div style="display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; color: #B4C1C9">
+<span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 12px; height: 12px; border-radius: 3px; background: #5CC8FF"></span>Người quen nhận đúng</span>
+<span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 12px; height: 12px; border-radius: 3px; background: #E2711D"></span>Người lạ bị nhận nhầm (macro)</span>
+</div>
+</div>
+<div role="group" aria-label="Biểu đồ theo ngưỡng" style="display: grid; grid-template-columns: repeat(11, minmax(0, 1fr)); gap: 8px; align-items: end">
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="11">
+<button type="button" onClick="{{r.pick}}" aria-pressed="{{r.pressed}}" aria-label="Ngưỡng {{r.t}}" style="display: flex; flex-direction: column; align-items: stretch; gap: 8px; padding: 8px 4px; border-radius: 10px; border: 1px solid {{r.border}}; background: {{r.bg}}; color: #E8EEF1; font: inherit; cursor: pointer; min-width: 0">
+<span style="display: flex; align-items: flex-end; justify-content: center; gap: 4px; height: 180px">
+<span style="width: 40%; max-width: 22px; height: {{r.tarPct}}%; background: #5CC8FF; border-radius: 4px 4px 0 0"></span>
+<span style="width: 40%; max-width: 22px; height: {{r.farPct}}%; min-height: 2px; background: #E2711D; border-radius: 4px 4px 0 0"></span>
+</span>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; text-align: center">{{r.t}}</span>
+</button>
+</sc-for>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: stretch">
+<div style="flex: 1 1 200px; background: #0F1417; border-radius: 10px; padding: 14px"><div style="font-size: 12px; color: #9AA8B1">Ngưỡng đang xem</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 24px; color: #5CC8FF">{{sel.t}}</div></div>
+<div style="flex: 1 1 200px; background: #0F1417; border-radius: 10px; padding: 14px"><div style="font-size: 12px; color: #9AA8B1">Người quen nhận đúng</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 24px">{{sel.tarStr}}</div></div>
+<div style="flex: 1 1 200px; background: #0F1417; border-radius: 10px; padding: 14px"><div style="font-size: 12px; color: #9AA8B1">Người lạ bị nhận nhầm</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 24px; color: {{sel.farColor}}">{{sel.farStr}}</div></div>
+<div style="flex: 2 1 320px; background: #0F1417; border-radius: 10px; padding: 14px; font-size: 14px; color: #CBD5DB">{{sel.note}}</div>
+</div>
+</section>
+
+<section style="background: #182026; border: 1px solid #26323A; border-radius: 14px; padding: 24px; display: flex; flex-direction: column; gap: 14px">
+<h2 style="margin: 0; font-size: 18px; font-weight: 600">Dữ liệu theo người</h2>
+<div style="overflow-x: auto">
+<table style="width: 100%; min-width: 640px; border-collapse: collapse; font-size: 14px">
+<thead>
+<tr style="text-align: left; color: #9AA8B1; font-size: 13px">
+<th scope="col" style="padding: 10px 12px; border-bottom: 1px solid #26323A; font-weight: 500">Người</th>
+<th scope="col" style="padding: 10px 12px; border-bottom: 1px solid #26323A; font-weight: 500">Video</th>
+<th scope="col" style="padding: 10px 12px; border-bottom: 1px solid #26323A; font-weight: 500">Frame dùng được</th>
+<th scope="col" style="padding: 10px 12px; border-bottom: 1px solid #26323A; font-weight: 500">Ghi chú</th>
+</tr>
+</thead>
+<tbody>
+<sc-for list="{{people}}" as="p" hint-placeholder-count="13">
+<tr>
+<td style="padding: 10px 12px; border-bottom: 1px solid #222C33; font-weight: 500">{{p.name}}</td>
+<td style="padding: 10px 12px; border-bottom: 1px solid #222C33; font-family: 'IBM Plex Mono', monospace">{{p.videos}}</td>
+<td style="padding: 10px 12px; border-bottom: 1px solid #222C33">
+<span style="display: flex; align-items: center; gap: 10px"><span style="font-family: 'IBM Plex Mono', monospace; width: 40px">{{p.frames}}</span><span style="flex: 1; max-width: 220px; height: 6px; border-radius: 999px; background: #26323A; position: relative"><span style="position: absolute; left: 0; top: 0; bottom: 0; width: {{p.barPct}}%; border-radius: 999px; background: {{p.barColor}}"></span></span></span>
+</td>
+<td style="padding: 10px 12px; border-bottom: 1px solid #222C33; color: {{p.noteColor}}">{{p.note}}</td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</section>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1180}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { t: '0.55' };
+  }
+  renderVals() {
+    // calibrate_threshold.py trên face_embeddings.npz
+    const data = [
+      ['0.30', 1.000, 0.481], ['0.35', 1.000, 0.197], ['0.40', 1.000, 0.128], ['0.45', 1.000, 0.026],
+      ['0.50', 1.000, 0.000], ['0.55', 0.999, 0.000], ['0.60', 0.997, 0.000], ['0.65', 0.995, 0.000],
+      ['0.70', 0.989, 0.000], ['0.75', 0.980, 0.000], ['0.80', 0.947, 0.000],
+    ];
+    const notes = {
+      '0.45': 'Ngưỡng cũ: 2,6% frame người lạ bị nhận nhầm, Dung tới 18% vì giống Nga (0.47).',
+      '0.50': 'Điểm đầu tiên người lạ hết bị nhận nhầm, nhưng không còn khoảng dự phòng.',
+      '0.55': 'Đang dùng: thêm 0.05 dự phòng cho frame webcam mờ hơn dữ liệu hiệu chỉnh.',
+    };
+    const rows = data.map(([t, tar, far]) => {
+      const on = t === this.state.t;
+      return { t, tarPct: Math.round(tar * 100), farPct: Math.round(far * 100),
+        pick: () => this.setState({ t }), pressed: on ? 'true' : 'false',
+        border: on ? '#5CC8FF' : '#26323A', bg: on ? '#182A35' : 'transparent' };
+    });
+    const cur = data.find((d) => d[0] === this.state.t) || data[5];
+    const sel = {
+      t: cur[0],
+      tarStr: (cur[1] * 100).toFixed(1) + '%',
+      farStr: (cur[2] * 100).toFixed(1) + '%',
+      farColor: cur[2] > 0 ? '#E2711D' : '#E8EEF1',
+      note: notes[cur[0]] || (cur[2] > 0 ? 'Quá dễ: người lạ thường bị gọi bằng tên người khác.' : 'An toàn với người lạ; ngưỡng càng cao càng dễ bỏ sót người quen.'),
+    };
+    const raw = [
+      ['A', 4, 228, ''], ['B', 4, 47, 'Phần lớn frame bị mờ'], ['bang', 2, 33, 'Video có nhiều người, ít frame'],
+      ['Dung', 4, 384, 'Gần Nga nhất (0.47)'], ['Hien', 4, 420, ''], ['Nga', 4, 292, 'Gần Dung nhất (0.47)'],
+      ['Phuc', 4, 397, ''], ['phuong', 1, 51, 'Chỉ 1 video, chưa đánh giá được'], ['thanh', 4, 124, 'Gồm real.mp4 và real-1.mp4 đã sửa nhãn'],
+      ['Thu', 2, 144, ''], ['Un', 4, 196, ''], ['thang', 2, 0, 'Chưa đăng ký: mọi frame có nhiều mặt'], ['thanh2', 1, 0, 'Chưa đăng ký: mọi frame có nhiều mặt'],
+    ];
+    const people = raw.map(([name, videos, frames, note]) => ({
+      name, videos, frames, note: note || '—',
+      barPct: Math.round(frames / 420 * 100),
+      barColor: frames < 60 ? '#E2711D' : '#5CC8FF',
+      noteColor: frames === 0 ? '#F2B544' : '#B4C1C9',
+    }));
+    return { rows, sel, people };
+  }
+}
+</script>
+</body>
+</html>

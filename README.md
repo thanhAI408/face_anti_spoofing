@@ -1,12 +1,32 @@
-# Face Anti-Spoofing (Chống Giả Mạo Khuôn Mặt)
+# Face Anti-Spoofing (Chống Giả Mạo Khuôn Mặt) & Hệ Thống Chấm Công Sinh Trắc Học
 
-Hệ thống nhận diện và phân loại khuôn mặt thật / giả (Face Anti-Spoofing) theo thời gian thực sử dụng mạng nơ-ron tích chập (LivenessNet) kết hợp OpenCV YuNet và TensorFlow Lite tăng tốc phần cứng XNNPACK.
+Hệ thống nhận diện và phân loại khuôn mặt thật / giả (Face Anti-Spoofing) theo thời gian thực sử dụng mạng nơ-ron tích chập (`LivenessNet`) kết hợp OpenCV `YuNet`, biên dịch tăng tốc phần cứng CPU `LiteRT XNNPACK` (`0.163 ms`) và tích hợp cổng bảo vệ `LivenessGate` cho hệ thống chấm công nhận diện khuôn mặt `ArcFace` (`ChamCong_FaceID`).
 
 ---
 
-## 1. Chạy thử nghiệm Camera nhanh nhất
+## 🎓 Tài Liệu Khóa Luận Tốt Nghiệp & Hướng Dẫn Bảo Vệ Cho Các Thành Viên Nhóm
 
-Cách đơn giản nhất trên Windows là nhấp đúp vào file batch:
+- 📋 **[Hướng dẫn Phân công, Làm Slide, Kịch bản Thuyết trình & Câu hỏi Phản biện cho 4 Thành viên (`capstone/HUONG_DAN_THANH_VIEN_NHOM_BAO_VE_DO_AN.md`)](capstone/HUONG_DAN_THANH_VIEN_NHOM_BAO_VE_DO_AN.md)** *(Tài liệu tổng hợp đầy đủ cho Nguyễn Văn Thành, Nguyễn Chiến Thắng, Nguyễn Hoàng Tuyên, Lê Thanh Phương)*.
+- 🎙️ **[Kịch bản & Xem trước 5 Slide Phần 1 — Chương 1 & 2 (`capstone/Kich_Ban_Thuyet_Trinh_5_Slide_Phan1_NguyenVanThanh.md`)](capstone/Kich_Ban_Thuyet_Trinh_5_Slide_Phan1_NguyenVanThanh.md)**
+- 🌐 **[Bản Đọc Song Ngữ & Giải Thích Chi Tiết Chương 1 & 2 (`capstone/Thanh_BienDich_ThuyetTrinh_Chap1_Chap2.html`)](capstone/Thanh_BienDich_ThuyetTrinh_Chap1_Chap2.html)**
+- 📊 **[Slide Bảo vệ Phần 1 — Nguyễn Văn Thành (`.pptx`)](deliverables/Slide_BaoVe_Phan1_NguyenVanThanh_5Slides.pptx)**
+- 📄 **[Mã nguồn Khóa luận LaTeX FPTU (`capstone/`)](capstone/)** & **[Bản đóng gói Overleaf (`capstone/FPTU_Face_Anti_Spoofing_Capstone.zip`)](capstone/FPTU_Face_Anti_Spoofing_Capstone.zip)**
+- 📈 **[Bộ số liệu & Log thực nghiệm chuẩn Cam4K (`outputs/cam4k-20261020/evaluation.json`)](outputs/cam4k-20261020/evaluation.json)**
+
+---
+
+## 1. Chạy thử nghiệm Camera & Web Chấm Công nhanh nhất (1-Click)
+
+### A. Chạy Hệ thống Web Chấm Công FaceID + Chống Giả Mạo (`ChamCong_FaceID`)
+Nhấp đúp vào file batch ở thư mục gốc:
+```cmd
+Chay_Cham_Cong_FaceID.bat
+```
+- Hệ thống tự động khởi động FastAPI WebSocket Server và mở trình duyệt tại **`http://localhost:8000`**.
+- Tích hợp sẵn cổng **`LivenessGate`** (`YuNet ROI Re-Alignment` + `liveness_cam4k.tflite`) chặn đứng video/ảnh giả mạo trước khi so khớp `InsightFace ArcFace` ($\tau = 0.55$). Xem chi tiết tại [`ChamCong_FaceID/README.md`](ChamCong_FaceID/README.md).
+
+### B. Chạy thử nghiệm Camera Anti-Spoofing (`30.4 FPS`)
+Nhấp đúp vào file batch:
 ```cmd
 chay_test_camera.bat
 ```

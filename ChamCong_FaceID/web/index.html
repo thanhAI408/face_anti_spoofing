@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chấm Công FaceID - Tích Hợp Chống Giả Mạo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/static/style.css?v=20261021_audit">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#5CC8FF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V5a1 1 0 0 1 1-1h3"/><path d="M16 4h3a1 1 0 0 1 1 1v3"/><path d="M20 16v3a1 1 0 0 1-1 1h-3"/><path d="M8 20H5a1 1 0 0 1-1-1v-3"/><circle cx="12" cy="10" r="3"/><path d="M7 17c1.2-2 3-3 5-3s3.8 1 5 3"/></svg>
+    FaceID Lab & Liveness Guard
+  </div>
+  <nav class="tabs" aria-label="Màn hình">
+    <a href="#live" data-view="live">Nhận diện</a>
+    <a href="#enroll" data-view="enroll">Đăng ký</a>
+    <a href="#manage" data-view="manage">Quản lý dữ liệu</a>
+    <a href="#report" data-view="report">Đánh giá</a>
+  </nav>
+  <div class="chips">
+    <span class="chip chip-liveness on" id="chip-liveness">🛡️ Chống Giả Mạo: BẬT</span>
+    <span class="chip" id="chip-provider">…</span>
+    <span class="chip" id="chip-fps">0 FPS</span>
+    <span class="chip" id="chip-people">… người đã đăng ký</span>
+  </div>
+</header>
+
+<!-- 1. Nhận diện trực tiếp -->
+<main class="page" id="view-live">
+  <div class="row">
+    <section class="col-main" aria-label="Camera">
+      <div class="cam" id="live-cam">
+        <video id="live-video" autoplay muted playsinline></video>
+        <div class="placeholder" id="live-placeholder">Đang mở webcam…</div>
+        <div class="badges">
+          <span id="live-state"><span class="dot"></span>LIVE</span>
+          <span class="mono" id="live-ms">— ms/frame</span>
+        </div>
+        <div id="live-boxes"></div>
+      </div>
+      <div class="actions">
+        <!-- NÚT BẬT / TẮT CHỐNG GIẢ MẠO -->
+        <button class="btn btn-liveness active" type="button" role="switch" aria-checked="true" id="btn-liveness">
+          <span class="switch-track"><span class="switch-knob"></span></span>
+          <span id="liveness-btn-text">🛡️ Chống giả mạo: BẬT</span>
+        </button>
+
+        <!-- CHỌN CAMERA / ĐỔI CAM (HỖ TRỢ SC-M200 VÀ CÁC WEBCAM KHÁC) -->
+        <div class="cam-select-box" title="Chọn thiết bị camera (VD: SC-M200, WebCam USB, Camera tích hợp)">
+          <span style="font-size: 16px;">📷</span>
+          <select id="camera-select" aria-label="Chọn thiết bị camera">
+            <option value="">Đang tải camera...</option>
+          </select>
+        </div>
+        <button class="btn" type="button" id="btn-switch-cam" title="Chuyển đổi luân phiên giữa SC-M200 và Camera máy">🔄 Đổi Camera</button>
+
+        <button class="btn" type="button" id="btn-pause">Tạm dừng</button>
+        <button class="btn" type="button" id="btn-snap">Chụp khung hình</button>
+        <button class="btn" type="button" role="switch" aria-checked="true" id="btn-log">
+          <span class="switch-track"><span class="switch-knob"></span></span>Ghi log điểm danh
+        </button>
+      </div>
+      <div class="grid3" id="live-cards"></div>
+    </section>
+
+    <aside class="col-side">
+      <!-- Banner trạng thái Liveness -->
+      <section class="card liveness-banner" id="liveness-banner">
+        <div class="card-head">
+          <h2 style="display: flex; align-items: center; gap: 8px;">
+            <span>🛡️ Chống Giả Mạo</span>
+          </h2>
+          <span class="small mono" id="liveness-badge-status" style="background: rgba(0, 230, 118, 0.15); color: #00E676; padding: 3px 8px; border-radius: 6px; font-weight: 600;">BẬT (AN TOÀN)</span>
+        </div>
+        <p class="small muted" id="liveness-desc">
+          Mô hình <b>liveness_cam4k</b> đang hoạt động. Khuôn mặt trên màn hình điện thoại hoặc ảnh in sẽ bị phát hiện và từ chối chấm công.
+        </p>
+        <div class="small" style="display: flex; justify-content: space-between; border-top: 1px solid var(--line-soft); padding-top: 8px;">
+          <span style="color: #00E676; font-weight: 500;">✓ REAL: Điểm danh</span>
+          <span style="color: #FF5252; font-weight: 500;">✗ FAKE: Khóa điểm danh</span>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <label for="thr">Ngưỡng nhận diện</label>
+          <span class="mono" style="font-size: 22px; color: var(--known)" id="thr-value">0.55</span>
+        </div>
+        <input id="thr" type="range" min="0.30" max="0.80" step="0.01" value="0.55">
+        <div class="card-head mono small muted"><span>0.30 · dễ</span><span>0.80 · chặt</span></div>
+        <div class="grid2">
+          <div class="tile"><div class="label">Người quen nhận đúng</div><div class="value" id="thr-tar">—</div></div>
+          <div class="tile"><div class="label">Người lạ bị nhận nhầm</div><div class="value" id="thr-far">—</div></div>
+        </div>
+        <p class="small muted" id="thr-note">Số liệu từ đánh giá trên face_embeddings.npz.</p>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><h2>Nhật ký điểm danh (Hợp lệ)</h2><span class="small muted">mỗi người 30 giây/lần</span></div>
+        <div id="log-list"><p class="small muted">Chưa có ai.</p></div>
+        <a href="/api/log.csv" class="small">Tải CSV hôm nay</a>
+      </section>
+
+      <section class="card">
+        <h2>Đã đăng ký</h2>
+        <div class="people" id="people"></div>
+      </section>
+    </aside>
+  </div>
+</main>
+
+<!-- 2. Đăng ký người mới -->
+<main class="page narrow stack" id="view-enroll" hidden>
+  <div>
+    <h1>Đăng ký người mới</h1>
+    <p class="muted">Quay vài đoạn ngắn, hệ thống tự lọc frame tốt và tạo hồ sơ khuôn mặt. Không cần gán nhãn từng ảnh.</p>
+  </div>
+  <ol class="steps">
+    <li><button class="step" type="button" data-step="1"><span class="num">1</span><span><span class="title">Thông tin</span><span class="sub">Tên hiển thị</span></span></button></li>
+    <li><button class="step" type="button" data-step="2"><span class="num">2</span><span><span class="title">Quay video</span><span class="sub">2–4 đoạn, mỗi đoạn 6 giây</span></span></button></li>
+    <li><button class="step" type="button" data-step="3"><span class="num">3</span><span><span class="title">Xác nhận</span><span class="sub">Kiểm tra trùng và lưu</span></span></button></li>
+  </ol>
+
+  <section class="card" id="enroll-step1" style="max-width: 560px; gap: 18px">
+    <div class="field">
+      <label for="enroll-name">Tên hiển thị</label>
+      <input id="enroll-name" type="text" maxlength="40" autocomplete="off" placeholder="vd. Nguyễn Văn Thành">
+      <span class="small muted">Tên này sẽ hiện trên khung nhận diện và trong nhật ký điểm danh.</span>
+    </div>
+    <p class="small" id="enroll-name-error" style="color: var(--warn)" hidden></p>
+    <button class="btn primary" type="button" id="enroll-next" style="align-self: flex-start">Tiếp tục</button>
+  </section>
+
+  <section class="row" id="enroll-step2" hidden>
+    <div class="col-main" style="flex: 1 1 380px">
+      <div class="cam">
+        <video id="enroll-video" autoplay muted playsinline></video>
+        <div class="guide"></div>
+        <div class="badges"><span id="enroll-rec" hidden><span class="dot"></span>ĐANG GHI <span id="enroll-count"></span></span></div>
+      </div>
+      <div class="grid3">
+        <div class="tile"><div style="font-weight: 600">Nhìn thẳng</div><div class="small muted">đoạn đầu</div></div>
+        <div class="tile"><div style="font-weight: 600">Xoay nhẹ trái/phải</div><div class="small muted">dưới 35°</div></div>
+        <div class="tile"><div style="font-weight: 600">Ánh sáng khác</div><div class="small muted">trong nhà / gần cửa</div></div>
+      </div>
+      <button class="btn record" type="button" id="enroll-record"><span class="dot" style="background: var(--ground)"></span>Quay đoạn tiếp theo</button>
+    </div>
+    <div class="card" style="flex: 1 1 420px; min-width: 0">
+      <div class="card-head"><h2>Chất lượng từng đoạn</h2><span class="small muted">30 frame / đoạn</span></div>
+      <div id="clip-list"><p class="small muted">Chưa quay đoạn nào. Chỉ để một người trong khung hình.</p></div>
+      <div class="legend">
+        <span><span class="sw" style="background: var(--known)"></span>Dùng được</span>
+        <span><span class="sw" style="background: var(--unknown)"></span>Mờ / điểm thấp</span>
+        <span><span class="sw" style="background: var(--pose)"></span>Không thấy mặt / nhiều mặt</span>
+      </div>
+      <button class="btn primary" type="button" id="enroll-review" style="align-self: flex-start" disabled>Tạo hồ sơ khuôn mặt</button>
+    </div>
+  </section>
+
+  <section class="card" id="enroll-step3" style="max-width: 720px; gap: 18px" hidden>
+    <h2 style="font-size: 18px">Kiểm tra trước khi lưu</h2>
+    <div class="grid3">
+      <div class="tile"><div class="label">Đoạn hợp lệ</div><div class="value" id="sum-clips">—</div></div>
+      <div class="tile"><div class="label">Embedding</div><div class="value" id="sum-emb">—</div></div>
+      <div class="tile"><div class="label">Giống người khác nhất</div><div class="value" id="sum-nearest">—</div></div>
+    </div>
+    <div class="notice" id="sum-notice"></div>
+    <div class="actions">
+      <button class="btn primary" type="button" id="enroll-save">Lưu vào danh sách</button>
+      <button class="btn ghost" type="button" id="enroll-more">Quay thêm</button>
+    </div>
+    <p class="small" id="enroll-result" hidden></p>
+  </section>
+</main>
+
+<!-- 3. Quản lý dữ liệu nhân viên & Điểm danh -->
+<main class="page narrow stack" id="view-manage" hidden>
+  <div>
+    <h1>Quản lý dữ liệu khuôn mặt & Điểm danh</h1>
+    <p class="muted">Xem danh sách nhân viên đã đăng ký, chỉnh sửa đổi tên, xóa hồ sơ và quản lý lịch sử điểm danh.</p>
+  </div>
+
+  <section class="card" style="gap: 16px;">
+    <div class="card-head" style="flex-wrap: wrap;">
+      <h2>Danh sách nhân viên (<span id="manage-count">0</span>)</h2>
+      <a href="#enroll" class="btn primary small" style="padding: 6px 14px; min-height: 38px; text-decoration: none;">➕ Đăng ký người mới</a>
+    </div>
+    <div id="manage-people-list" style="display: flex; flex-direction: column; gap: 10px;">
+      <p class="small muted">Đang tải danh sách nhân viên...</p>
+    </div>
+  </section>
+
+  <section class="card" style="gap: 14px;">
+    <div class="card-head" style="flex-wrap: wrap;">
+      <h2>Nhật ký điểm danh hôm nay</h2>
+      <div style="display: flex; gap: 8px;">
+        <a href="/api/log.csv" class="btn small" style="min-height: 36px; padding: 6px 12px; text-decoration: none;">📥 Tải CSV</a>
+        <button class="btn small btn-danger" id="btn-clear-log" type="button" style="min-height: 36px; padding: 6px 12px;">🧹 Xóa trắng nhật ký hôm nay</button>
+      </div>
+    </div>
+    <p class="small muted">Xóa sạch danh sách điểm danh hôm nay để chuẩn bị ca làm việc mới hoặc chạy kiểm thử lại từ đầu.</p>
+  </section>
+
+  <section class="card" style="gap: 12px; border-color: rgba(255, 73, 92, 0.4); background: rgba(255, 73, 92, 0.03);">
+    <div class="card-head">
+      <h2 style="color: #FF5252;">⚠️ Xóa toàn bộ dữ liệu (Reset hệ thống)</h2>
+    </div>
+    <p class="small muted">Thao tác này sẽ xóa sạch toàn bộ hồ sơ của tất cả nhân viên trong cơ sở dữ liệu để bạn đăng ký mới hoàn toàn.</p>
+    <button class="btn btn-danger" id="btn-clear-all" type="button" style="align-self: flex-start; font-size: 13px;">
+      🗑️ Xóa sạch tất cả nhân viên
+    </button>
+  </section>
+</main>
+
+<!-- 4. Đánh giá mô hình -->
+<main class="page stack" id="view-report" hidden style="max-width: 1280px">
+  <div>
+    <h1>Đánh giá mô hình</h1>
+    <p class="muted">Mỗi frame được chấm riêng như lúc chạy realtime. Người quen: leave-one-video-out. Người lạ: bỏ hẳn một người khỏi danh sách rồi thử nhận diện người đó.</p>
+  </div>
+  <div class="grid4">
+    <div class="kpi"><div class="small muted">Người đã đăng ký</div><div class="value" id="kpi-people">—</div></div>
+    <div class="kpi"><div class="small muted">Video có embedding</div><div class="value" id="kpi-videos">—</div></div>
+    <div class="kpi"><div class="small muted">Frame đánh giá</div><div class="value" id="kpi-frames">—</div></div>
+    <div class="kpi"><div class="small muted">Top-1 đúng (chưa xét ngưỡng)</div><div class="value" id="kpi-top1">—</div></div>
+  </div>
+  <section class="card" style="padding: 24px; gap: 18px">
+    <div class="card-head" style="flex-wrap: wrap">
+      <h2 style="font-size: 18px">Chọn ngưỡng cosine</h2>
+      <div class="legend" style="font-size: 13px">
+        <span><span class="sw" style="background: var(--known); width: 12px; height: 12px"></span>Người quen nhận đúng</span>
+        <span><span class="sw" style="background: var(--unknown); width: 12px; height: 12px"></span>Người lạ bị nhận nhầm (macro)</span>
+      </div>
+    </div>
+    <div class="chart" role="group" aria-label="Biểu đồ theo ngưỡng" id="chart"></div>
+    <div class="row" style="gap: 12px; align-items: stretch">
+      <div class="tile" style="flex: 1 1 180px"><div class="label">Ngưỡng đang xem</div><div class="value" style="color: var(--known)" id="sel-t">—</div></div>
+      <div class="tile" style="flex: 1 1 180px"><div class="label">Người quen nhận đúng</div><div class="value" id="sel-tar">—</div></div>
+      <div class="tile" style="flex: 1 1 180px"><div class="label">Người lạ bị nhận nhầm</div><div class="value" id="sel-far">—</div></div>
+      <div class="tile" style="flex: 2 1 320px; font-size: 14px; color: #CBD5DB" id="sel-note"></div>
+    </div>
+  </section>
+  <section class="card" style="padding: 24px">
+    <h2 style="font-size: 18px">Dữ liệu theo người</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">Người</th><th scope="col">Video</th><th scope="col">Frame dùng được</th><th scope="col">Giống người khác nhất</th></tr></thead>
+        <tbody id="people-table"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<canvas id="grab" width="640" height="480" hidden></canvas>
+<script src="/static/app.js?v=20261021_swap_cam_fixed"></script>
+</body>
+</html>

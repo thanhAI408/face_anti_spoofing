@@ -3,10 +3,13 @@ title He Thong Cham Cong FaceID - Liveness Cam4K
 cd /d "%~dp0ChamCong_FaceID"
 
 if not exist ".venv\Scripts\python.exe" (
-    echo [ERROR] Khong tim thay moi truong ao tai: %~dp0ChamCong_FaceID\.venv
-    echo Vui long kiem tra lai du an.
-    pause
-    exit /b 1
+    echo [INFO] Chua co moi truong ao .venv trong ChamCong_FaceID. Dang tu dong khoi tao...
+    python -m venv .venv
+    .venv\Scripts\python.exe -m pip install --upgrade pip
+    .venv\Scripts\python.exe -m pip install -r requirements-cpu.txt
+    if not exist "face_prototypes.npz" (
+        .venv\Scripts\python.exe init_demo_data.py
+    )
 )
 
 for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":8000" ^| findstr "LISTENING"') do taskkill /f /pid %%a >nul 2>&1

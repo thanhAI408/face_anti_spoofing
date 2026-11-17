@@ -1,0 +1,16 @@
+# Tested with Windows x64 and Python 3.10.
+# InsightFace declares the generic onnxruntime package. Install the GPU wheel
+# again after this file so its shared onnxruntime files are the active ones:
+#   python -m pip install -r requirements.txt
+#   python -m pip install --force-reinstall --no-deps "onnxruntime-gpu[cuda,cudnn]==1.23.2"
+
+# Application dependencies
+insightface==2.0
+numpy==1.26.4
+opencv-python==4.11.0.86
+
+# NVIDIA CUDA 12 and cuDNN 9 dependencies for ONNX Runtime GPU
+onnxruntime-gpu[cuda,cudnn]==1.23.2
+nvidia-cublas-cu12==12.9.2.10
+# cuDNN mới hơn (vd. 9.27) làm conv lỗi HEURISTIC_QUERY_FAILED và ONNX Runtime rơi về CPU.
+nvidia-cudnn-cu12==9.10.2.21
